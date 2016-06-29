@@ -1,0 +1,26 @@
+---
+accounts-service-git-uri: git@github.com:.../accounts-service.git
+accounts-service-git-branch: master
+accounts-version-git-uri: git@github.com:.../accounts-service.git
+accounts-version-git-branch: version
+portfolio-service-git-uri: git@github.com:.../portfolio-service.git
+portfolio-service-git-branch: master
+portfolio-version-git-uri: git@github.com:.../portfolio-service.git
+portfolio-version-git-branch: version
+quotes-service-git-uri: git@github.com:.../quotes-service.git
+quotes-service-git-branch: master
+quotes-version-git-uri: git@github.com:.../quotes-service.git
+quotes-version-git-branch: version
+web-ui-git-uri: git@github.com:.../web-ui.git
+web-ui-git-branch: master
+web-version-git-uri: git@github.com:.../web-ui.git
+web-version-git-branch: version
+s3-endpoint: s3.amazonaws.com
+s3-access-key-id: SAMPLEA987DFGES8R7GA
+s3-secret-access-key: SAMPLE97efqjwehrf87werogw8oiufhw8eo7fhqw
+s3-bucket-milestones: pivotal-bank-release-candidates
+s3-bucket-releases: pivotal-bank-releases
+git-private-key: |
+  -----BEGIN RSA PRIVATE KEY-----
+  SAMPLE...
+  -----END RSA PRIVATE KEY-----

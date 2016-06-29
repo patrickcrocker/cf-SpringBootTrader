@@ -1,0 +1,288 @@
+---
+groups:
+- name: develop
+  jobs:
+  - build-accounts-service
+  - build-portfolio-service
+  - build-quotes-service
+  - build-web-ui
+- name: publish
+  jobs:
+  - accounts-major
+  - accounts-minor
+  - portfolio-major
+  - portfolio-minor
+  - quotes-major
+  - quotes-minor
+  - web-major
+  - web-minor
+
+jobs:
+- name: build-accounts-service
+  plan:
+    - get: accounts
+      resource: accounts-service
+      trigger: true
+    - get: version
+      resource: accounts-version
+      params: { pre: rc }
+    - task: build
+      file: accounts/ci/build.yml
+    - put: accounts-milestones
+      params: { file: build/accounts-*.jar }
+    - put: accounts-version
+      params: { file: version/number }
+
+- name: accounts-major
+  serial_groups: [ accounts-version ]
+  plan:
+  - get: accounts-version
+    params: { bump: major, pre: rc }
+  - put: accounts-version
+    params: { file: accounts-version/number }
+
+- name: accounts-minor
+  public: true
+  serial_groups: [ accounts-version ]
+  plan:
+  - get: accounts-version
+    params: { bump: minor, pre: rc }
+  - put: accounts-version
+    params: { file: accounts-version/number }
+
+- name: build-portfolio-service
+  plan:
+    - get: portfolio
+      resource: portfolio-service
+      trigger: true
+    - get: version
+      resource: portfolio-version
+      params: { pre: rc }
+    - task: build
+      file: portfolio/ci/build.yml
+    - put: portfolio-milestones
+      params: { file: build/portfolio-*.jar }
+    - put: portfolio-version
+      params: { file: version/number }
+
+- name: portfolio-major
+  serial_groups: [ portfolio-version ]
+  plan:
+  - get: portfolio-version
+    params: { bump: major, pre: rc }
+  - put: portfolio-version
+    params: { file: portfolio-version/number }
+
+- name: portfolio-minor
+  public: true
+  serial_groups: [ portfolio-version ]
+  plan:
+  - get: portfolio-version
+    params: { bump: minor, pre: rc }
+  - put: portfolio-version
+    params: { file: portfolio-version/number }
+
+- name: build-quotes-service
+  plan:
+    - get: quotes
+      resource: quotes-service
+      trigger: true
+    - get: version
+      resource: quotes-version
+      params: { pre: rc }
+    - task: build
+      file: quotes/ci/build.yml
+    - put: quotes-milestones
+      params: { file: build/quotes-*.jar }
+    - put: quotes-version
+      params: { file: version/number }
+
+- name: quotes-major
+  serial_groups: [ quotes-version ]
+  plan:
+  - get: quotes-version
+    params: { bump: major, pre: rc }
+  - put: quotes-version
+    params: { file: quotes-version/number }
+
+- name: quotes-minor
+  public: true
+  serial_groups: [ quotes-version ]
+  plan:
+  - get: quotes-version
+    params: { bump: minor, pre: rc }
+  - put: quotes-version
+    params: { file: quotes-version/number }
+
+- name: build-web-ui
+  plan:
+    - get: web
+      resource: web-ui
+      trigger: true
+    - get: version
+      resource: web-version
+      params: { pre: rc }
+    - task: build
+      file: web/ci/build.yml
+    - put: web-milestones
+      params: { file: build/web-*.jar }
+    - put: web-version
+      params: { file: version/number }
+
+- name: web-major
+  serial_groups: [ web-version ]
+  plan:
+  - get: web-version
+    params: { bump: major, pre: rc }
+  - put: web-version
+    params: { file: web-version/number }
+
+- name: web-minor
+  public: true
+  serial_groups: [ web-version ]
+  plan:
+  - get: web-version
+    params: { bump: minor, pre: rc }
+  - put: web-version
+    params: { file: web-version/number }
+
+resources:
+- name: accounts-service
+  type: git
+  source:
+    uri: {{accounts-service-git-uri}}
+    branch: {{accounts-service-git-branch}}
+    private_key: {{git-private-key}}
+
+- name: accounts-version
+  type: semver
+  source:
+    driver: git
+    uri: {{accounts-version-git-uri}}
+    branch: {{accounts-version-git-branch}}
+    file: number
+    initial_version: 1.0.0-rc.0
+    private_key: {{git-private-key}}
+
+- name: accounts-milestones
+  type: s3
+  source:
+    bucket: {{s3-bucket-milestones}}
+    regexp: accounts-(.*).jar
+    access_key_id: {{s3-access-key-id}}
+    secret_access_key: {{s3-secret-access-key}}
+    endpoint: {{s3-endpoint}}
+
+- name: accounts-releases
+  type: s3
+  source:
+    bucket: {{s3-bucket-releases}}
+    regexp: accounts-(.*).jar
+    access_key_id: {{s3-access-key-id}}
+    secret_access_key: {{s3-secret-access-key}}
+    endpoint: {{s3-endpoint}}
+
+- name: portfolio-service
+  type: git
+  source:
+    uri: {{portfolio-service-git-uri}}
+    branch: {{portfolio-service-git-branch}}
+    private_key: {{git-private-key}}
+
+- name: portfolio-version
+  type: semver
+  source:
+    driver: git
+    uri: {{portfolio-version-git-uri}}
+    branch: {{portfolio-version-git-branch}}
+    file: number
+    initial_version: 1.0.0-rc.0
+    private_key: {{git-private-key}}
+
+- name: portfolio-milestones
+  type: s3
+  source:
+    bucket: {{s3-bucket-milestones}}
+    regexp: portfolio-(.*).jar
+    access_key_id: {{s3-access-key-id}}
+    secret_access_key: {{s3-secret-access-key}}
+    endpoint: {{s3-endpoint}}
+
+- name: portfolio-releases
+  type: s3
+  source:
+    bucket: {{s3-bucket-releases}}
+    regexp: portfolio-(.*).jar
+    access_key_id: {{s3-access-key-id}}
+    secret_access_key: {{s3-secret-access-key}}
+    endpoint: {{s3-endpoint}}
+
+- name: quotes-service
+  type: git
+  source:
+    uri: {{quotes-service-git-uri}}
+    branch: {{quotes-service-git-branch}}
+    private_key: {{git-private-key}}
+
+- name: quotes-version
+  type: semver
+  source:
+    driver: git
+    uri: {{quotes-version-git-uri}}
+    branch: {{quotes-version-git-branch}}
+    file: number
+    initial_version: 1.0.0-rc.0
+    private_key: {{git-private-key}}
+
+- name: quotes-milestones
+  type: s3
+  source:
+    bucket: {{s3-bucket-milestones}}
+    regexp: quotes-(.*).jar
+    access_key_id: {{s3-access-key-id}}
+    secret_access_key: {{s3-secret-access-key}}
+    endpoint: {{s3-endpoint}}
+
+- name: quotes-releases
+  type: s3
+  source:
+    bucket: {{s3-bucket-releases}}
+    regexp: quotes-(.*).jar
+    access_key_id: {{s3-access-key-id}}
+    secret_access_key: {{s3-secret-access-key}}
+    endpoint: {{s3-endpoint}}
+
+- name: web-ui
+  type: git
+  source:
+    uri: {{web-ui-git-uri}}
+    branch: {{web-ui-git-branch}}
+    private_key: {{git-private-key}}
+
+- name: web-version
+  type: semver
+  source:
+    driver: git
+    uri: {{web-version-git-uri}}
+    branch: {{web-version-git-branch}}
+    file: number
+    initial_version: 1.0.0-rc.0
+    private_key: {{git-private-key}}
+
+- name: web-milestones
+  type: s3
+  source:
+    bucket: {{s3-bucket-milestones}}
+    regexp: web-(.*).jar
+    access_key_id: {{s3-access-key-id}}
+    secret_access_key: {{s3-secret-access-key}}
+    endpoint: {{s3-endpoint}}
+
+- name: web-releases
+  type: s3
+  source:
+    bucket: {{s3-bucket-releases}}
+    regexp: web-(.*).jar
+    access_key_id: {{s3-access-key-id}}
+    secret_access_key: {{s3-secret-access-key}}
+    endpoint: {{s3-endpoint}}

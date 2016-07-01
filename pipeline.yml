@@ -19,6 +19,20 @@ groups:
   - web-major
   - web-minor
 
+cf-params: &cf-params
+  CF_API_URL: {{cf-api-url}}
+  CF_USERNAME: {{cf-username}}
+  CF_PASSWORD: {{cf-password}}
+  CF_SKIP_SSL: {{cf-skip-ssl}}
+  CF_ORG: {{cf-org}}
+  CF_SPACE: {{cf-space}}
+  CF_APP_NAME: {{cf-accounts-service-name}}
+  CF_CONFIG_SERVER_URI: {{cf-config-server-uri}}
+  CF_CONFIG_SERVER_LABEL: {{cf-config-server-label}}
+  CF_DB_SERVICE: {{cf-db-service}}
+  CF_APP_SERVICES: {{cf-accounts-service-services}}
+  CF_ARTIFACT_ID: accounts
+
 jobs:
 - name: build-accounts
   serial_groups: [ accounts-version ]
@@ -42,24 +56,16 @@ jobs:
 - name: itest-accounts
   serial: true
   plan:
-  - get: accounts-milestone
+  - get: pipeline
+  - get: release
+    resource: accounts-milestone
     passed: [ build-accounts ]
     trigger: true
-  - get: accounts-service
-    passed: [ build-accounts ]
   - task: itest
-    file: accounts-service/ci/itest.yml
-    params: &cf-params
-      CF_API_URL: {{cf-api-url}}
-      CF_USERNAME: {{cf-username}}
-      CF_PASSWORD: {{cf-password}}
-      CF_SKIP_SSL: {{cf-skip-ssl}}
-      CF_ORG: {{cf-org}}
-      CF_SPACE: {{cf-space}}
+    file: pipeline/ci/itest.yml
+    params:
+      <<: *cf-params
       CF_APP_NAME: {{cf-accounts-service-name}}
-      CF_CONFIG_SERVER_URI: {{cf-config-server-uri}}
-      CF_CONFIG_SERVER_LABEL: {{cf-config-server-label}}
-      CF_DB_SERVICE: {{cf-db-service}}
       CF_APP_SERVICES: {{cf-accounts-service-services}}
       CF_ARTIFACT_ID: accounts
 
@@ -102,13 +108,13 @@ jobs:
 - name: itest-portfolio
   serial: true
   plan:
-  - get: portfolio-milestone
+  - get: pipeline
+  - get: release
+    resource: portfolio-milestone
     passed: [ build-portfolio ]
     trigger: true
-  - get: portfolio-service
-    passed: [ build-portfolio ]
   - task: itest
-    file: portfolio-service/ci/itest.yml
+    file: pipeline/ci/itest.yml
     params:
       <<: *cf-params
       CF_APP_NAME: {{cf-portfolio-service-name}}

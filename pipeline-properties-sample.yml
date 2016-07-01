@@ -39,7 +39,7 @@ cf-portfolio-service-services: traderdb, discovery-service, circuit-breaker-dash
 cf-quotes-service-name: quotes-service
 cf-quotes-service-services: discovery-service, circuit-breaker-dashboard, config-server
 cf-web-ui-name: web-ui
-cf-web-service-services: discovery-service, circuit-breaker-dashboard, config-server
+cf-web-ui-services: discovery-service, circuit-breaker-dashboard, config-server
 git-private-key: |
   -----BEGIN RSA PRIVATE KEY-----
   ...

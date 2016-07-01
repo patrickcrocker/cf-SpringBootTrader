@@ -7,7 +7,9 @@ groups:
   - build-portfolio
   - itest-portfolio
   - build-quotes
+  - itest-quotes
   - build-web
+  - itest-web
 - name: publish
   jobs:
   - accounts-major
@@ -157,6 +159,22 @@ jobs:
   - put: quotes-version
     params: { file: version/number }
 
+- name: itest-quotes
+  serial: true
+  plan:
+  - get: pipeline
+  - get: release
+    resource: quotes-milestone
+    passed: [ build-quotes ]
+    trigger: true
+  - task: itest
+    file: pipeline/ci/itest.yml
+    params:
+      <<: *cf-params
+      CF_APP_NAME: {{cf-quotes-service-name}}
+      CF_APP_SERVICES: {{cf-quotes-service-services}}
+      CF_ARTIFACT_ID: quotes
+
 - name: quotes-major
   serial_groups: [ quotes-version ]
   plan:
@@ -192,6 +210,22 @@ jobs:
     params: { file: build/web-*.jar }
   - put: web-version
     params: { file: version/number }
+
+- name: itest-web
+  serial: true
+  plan:
+  - get: pipeline
+  - get: release
+    resource: web-milestone
+    passed: [ build-web ]
+    trigger: true
+  - task: itest
+    file: pipeline/ci/itest.yml
+    params:
+      <<: *cf-params
+      CF_APP_NAME: {{cf-web-ui-name}}
+      CF_APP_SERVICES: {{cf-web-ui-services}}
+      CF_ARTIFACT_ID: web
 
 - name: web-major
   serial_groups: [ web-version ]

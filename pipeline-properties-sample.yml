@@ -23,9 +23,9 @@ s3-secret-access-key: SAMPLE976a9gefa79w6egfa79w6efga97we6fgaw
 s3-bucket-milestone: pivotal-bank-release-candidates
 s3-bucket-release: pivotal-bank-release
 cf-api-url: https://api.run.pivotal.io
+cf-skip-ssl: false
 cf-username: jdoe
 cf-password: mysecret
-cf-skip-ssl: false
 cf-org: myorg
 cf-space: myspace
 cf-config-server-uri: https://github.com/.../cf-SpringBootTrader-config.git
@@ -33,12 +33,16 @@ cf-config-server-label: master
 #cf-db-service: p-mysql 100mb-dev traderdb
 cf-db-service: cleardb spark traderdb
 cf-accounts-service-name: accounts-service
+cf-accounts-service-host: accounts-service
 cf-accounts-service-services: traderdb, discovery-service, circuit-breaker-dashboard, config-server
 cf-portfolio-service-name: portfolio-service
+cf-portfolio-service-host: portfolio-service
 cf-portfolio-service-services: traderdb, discovery-service, circuit-breaker-dashboard, config-server
 cf-quotes-service-name: quotes-service
+cf-quotes-service-host: quotes-service
 cf-quotes-service-services: discovery-service, circuit-breaker-dashboard, config-server
 cf-web-ui-name: web-ui
+cf-web-ui-host: web-ui
 cf-web-ui-services: discovery-service, circuit-breaker-dashboard, config-server
 git-private-key: |
   -----BEGIN RSA PRIVATE KEY-----

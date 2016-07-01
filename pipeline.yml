@@ -2,6 +2,7 @@
 groups:
 - name: develop
   jobs:
+  - prepare-itest-env
   - build-accounts
   - itest-accounts
   - build-portfolio
@@ -24,17 +25,24 @@ groups:
 
 cf-params: &cf-params
   CF_API_URL: {{cf-api-url}}
+  CF_SKIP_SSL: {{cf-skip-ssl}}
   CF_USERNAME: {{cf-username}}
   CF_PASSWORD: {{cf-password}}
-  CF_SKIP_SSL: {{cf-skip-ssl}}
   CF_ORG: {{cf-org}}
   CF_SPACE: {{cf-space}}
-  CF_APP_NAME: {{cf-accounts-service-name}}
-  CF_CONFIG_SERVER_URI: {{cf-config-server-uri}}
-  CF_CONFIG_SERVER_LABEL: {{cf-config-server-label}}
-  CF_DB_SERVICE: {{cf-db-service}}
 
 jobs:
+- name: prepare-itest-env
+  plan:
+  - get: pipeline
+  - task: prepare-cf
+    file: pipeline/ci/prepare-cf.yml
+    params:
+      <<: *cf-params
+      CF_DB_SERVICE: {{cf-db-service}}
+      CF_CONFIG_SERVER_URI: {{cf-config-server-uri}}
+      CF_CONFIG_SERVER_LABEL: {{cf-config-server-label}}
+
 - name: build-accounts
   serial_groups: [ accounts-version ]
   plan:
@@ -51,7 +59,7 @@ jobs:
     params:
       ARTIFACT_ID: accounts
   - put: accounts-milestone
-    params: { file: build/accounts-*.jar }
+    params: { file: build-output/accounts-*.jar }
   - put: accounts-version
     params: { file: version/number }
 
@@ -60,17 +68,23 @@ jobs:
   plan:
   - aggregate:
     - get: pipeline
+      passed: [ prepare-itest-env ]
     - get: release
       resource: accounts-milestone
       passed: [ build-accounts ]
       trigger: true
-  - task: itest
-    file: pipeline/ci/itest.yml
+  - task: prepare-manifest
+    file: pipeline/ci/prepare-manifest.yml
     params:
       <<: *cf-params
       CF_APP_NAME: {{cf-accounts-service-name}}
+      CF_APP_HOST: {{cf-accounts-service-host}}
       CF_APP_SERVICES: {{cf-accounts-service-services}}
       CF_ARTIFACT_ID: accounts
+  - put: cf-itest
+    params:
+      manifest: prepare-manifest-output/manifest.yml
+      current_app_name: {{cf-accounts-service-name}}
 
 - name: accounts-major
   serial_groups: [ accounts-version ]
@@ -104,7 +118,7 @@ jobs:
     params:
       ARTIFACT_ID: portfolio
   - put: portfolio-milestone
-    params: { file: build/portfolio-*.jar }
+    params: { file: build-output/portfolio-*.jar }
   - put: portfolio-version
     params: { file: version/number }
 
@@ -113,17 +127,23 @@ jobs:
   plan:
   - aggregate:
     - get: pipeline
+      passed: [ prepare-itest-env ]
     - get: release
       resource: portfolio-milestone
       passed: [ build-portfolio ]
       trigger: true
-  - task: itest
-    file: pipeline/ci/itest.yml
+  - task: prepare-manifest
+    file: pipeline/ci/prepare-manifest.yml
     params:
       <<: *cf-params
       CF_APP_NAME: {{cf-portfolio-service-name}}
+      CF_APP_HOST: {{cf-portfolio-service-host}}
       CF_APP_SERVICES: {{cf-portfolio-service-services}}
       CF_ARTIFACT_ID: portfolio
+  - put: cf-itest
+    params:
+      manifest: prepare-manifest-output/manifest.yml
+      current_app_name: {{cf-portfolio-service-name}}
 
 - name: portfolio-major
   serial_groups: [ portfolio-version ]
@@ -157,7 +177,7 @@ jobs:
     params:
       ARTIFACT_ID: quotes
   - put: quotes-milestone
-    params: { file: build/quotes-*.jar }
+    params: { file: build-output/quotes-*.jar }
   - put: quotes-version
     params: { file: version/number }
 
@@ -166,17 +186,23 @@ jobs:
   plan:
   - aggregate:
     - get: pipeline
+      passed: [ prepare-itest-env ]
     - get: release
       resource: quotes-milestone
       passed: [ build-quotes ]
       trigger: true
-  - task: itest
-    file: pipeline/ci/itest.yml
+  - task: prepare-manifest
+    file: pipeline/ci/prepare-manifest.yml
     params:
       <<: *cf-params
       CF_APP_NAME: {{cf-quotes-service-name}}
+      CF_APP_HOST: {{cf-quotes-service-host}}
       CF_APP_SERVICES: {{cf-quotes-service-services}}
       CF_ARTIFACT_ID: quotes
+  - put: cf-itest
+    params:
+      manifest: prepare-manifest-output/manifest.yml
+      current_app_name: {{cf-quotes-service-name}}
 
 - name: quotes-major
   serial_groups: [ quotes-version ]
@@ -210,7 +236,7 @@ jobs:
     params:
       ARTIFACT_ID: web
   - put: web-milestone
-    params: { file: build/web-*.jar }
+    params: { file: build-output/web-*.jar }
   - put: web-version
     params: { file: version/number }
 
@@ -219,17 +245,23 @@ jobs:
   plan:
   - aggregate:
     - get: pipeline
+      passed: [ prepare-itest-env ]
     - get: release
       resource: web-milestone
       passed: [ build-web ]
       trigger: true
-  - task: itest
-    file: pipeline/ci/itest.yml
+  - task: prepare-manifest
+    file: pipeline/ci/prepare-manifest.yml
     params:
       <<: *cf-params
       CF_APP_NAME: {{cf-web-ui-name}}
+      CF_APP_HOST: {{cf-web-ui-host}}
       CF_APP_SERVICES: {{cf-web-ui-services}}
       CF_ARTIFACT_ID: web
+  - put: cf-itest
+    params:
+      manifest: prepare-manifest-output/manifest.yml
+      current_app_name: {{cf-web-ui-name}}
 
 - name: web-major
   serial_groups: [ web-version ]
@@ -403,3 +435,23 @@ resources:
     access_key_id: {{s3-access-key-id}}
     secret_access_key: {{s3-secret-access-key}}
     endpoint: {{s3-endpoint}}
+
+- name: cf-itest
+  type: cf
+  source:
+    api: {{cf-api-url}}
+    skip_cert_check: true
+    username: {{cf-username}}
+    password: {{cf-password}}
+    organization: {{cf-org}}
+    space: {{cf-space}}
+
+- name: cf-prod
+  type: cf
+  source:
+    api: {{cf-api-url}}
+    skip_cert_check: true
+    username: {{cf-username}}
+    password: {{cf-password}}
+    organization: {{cf-org}}
+    space: {{cf-space}}

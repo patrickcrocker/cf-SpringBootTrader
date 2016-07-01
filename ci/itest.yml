@@ -1,0 +1,30 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: patrickcrocker/cloudfoundry-cli
+    tag: 'latest'
+
+inputs:
+- name: accounts-service
+- name: accounts-milestone
+
+outputs:
+- name: itest
+
+params:
+  CF_API_URL:
+  CF_USERNAME:
+  CF_PASSWORD:
+  CF_SKIP_SSL:
+  CF_ORG:
+  CF_SPACE:
+  CF_APP_NAME:
+  CF_CONFIG_SERVER_URI:
+  CF_CONFIG_SERVER_LABEL:
+  CF_DB_SERVICE:
+
+run:
+  path: accounts-service/ci/itest.sh

@@ -8,4 +8,4 @@ pushd project
   ./gradlew -PversionNumber=$VERSION clean assemble
 popd
 
-cp project/build/libs/$ARTIFACT_ID-$VERSION.jar build/.
+cp project/build/libs/$ARTIFACT_ID-$VERSION.jar build-output/.

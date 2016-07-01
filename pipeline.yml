@@ -2,10 +2,12 @@
 groups:
 - name: develop
   jobs:
-  - build-accounts-service
-  - build-portfolio-service
-  - build-quotes-service
-  - build-web-ui
+  - build-accounts
+  - itest-accounts
+  - build-portfolio
+  - itest-portfolio
+  - build-quotes
+  - build-web
 - name: publish
   jobs:
   - accounts-major
@@ -18,20 +20,48 @@ groups:
   - web-minor
 
 jobs:
-- name: build-accounts-service
+- name: build-accounts
+  serial_groups: [ accounts-version ]
   plan:
-    - get: accounts
-      resource: accounts-service
-      trigger: true
-    - get: version
-      resource: accounts-version
-      params: { pre: rc }
-    - task: build
-      file: accounts/ci/build.yml
-    - put: accounts-milestones
-      params: { file: build/accounts-*.jar }
-    - put: accounts-version
-      params: { file: version/number }
+  - get: pipeline
+  - get: project
+    resource: accounts-service
+    trigger: true
+  - get: version
+    resource: accounts-version
+    params: { pre: rc }
+  - task: build
+    file: pipeline/ci/build.yml
+    params:
+      ARTIFACT_ID: accounts
+  - put: accounts-milestone
+    params: { file: build/accounts-*.jar }
+  - put: accounts-version
+    params: { file: version/number }
+
+- name: itest-accounts
+  serial: true
+  plan:
+  - get: accounts-milestone
+    passed: [ build-accounts ]
+    trigger: true
+  - get: accounts-service
+    passed: [ build-accounts ]
+  - task: itest
+    file: accounts-service/ci/itest.yml
+    params: &cf-params
+      CF_API_URL: {{cf-api-url}}
+      CF_USERNAME: {{cf-username}}
+      CF_PASSWORD: {{cf-password}}
+      CF_SKIP_SSL: {{cf-skip-ssl}}
+      CF_ORG: {{cf-org}}
+      CF_SPACE: {{cf-space}}
+      CF_APP_NAME: {{cf-accounts-service-name}}
+      CF_CONFIG_SERVER_URI: {{cf-config-server-uri}}
+      CF_CONFIG_SERVER_LABEL: {{cf-config-server-label}}
+      CF_DB_SERVICE: {{cf-db-service}}
+      CF_APP_SERVICES: {{cf-accounts-service-services}}
+      CF_ARTIFACT_ID: accounts
 
 - name: accounts-major
   serial_groups: [ accounts-version ]
@@ -50,20 +80,40 @@ jobs:
   - put: accounts-version
     params: { file: accounts-version/number }
 
-- name: build-portfolio-service
+- name: build-portfolio
+  serial_groups: [ portfolio-version ]
   plan:
-    - get: portfolio
-      resource: portfolio-service
-      trigger: true
-    - get: version
-      resource: portfolio-version
-      params: { pre: rc }
-    - task: build
-      file: portfolio/ci/build.yml
-    - put: portfolio-milestones
-      params: { file: build/portfolio-*.jar }
-    - put: portfolio-version
-      params: { file: version/number }
+  - get: pipeline
+  - get: project
+    resource: portfolio-service
+    trigger: true
+  - get: version
+    resource: portfolio-version
+    params: { pre: rc }
+  - task: build
+    file: pipeline/ci/build.yml
+    params:
+      ARTIFACT_ID: portfolio
+  - put: portfolio-milestone
+    params: { file: build/portfolio-*.jar }
+  - put: portfolio-version
+    params: { file: version/number }
+
+- name: itest-portfolio
+  serial: true
+  plan:
+  - get: portfolio-milestone
+    passed: [ build-portfolio ]
+    trigger: true
+  - get: portfolio-service
+    passed: [ build-portfolio ]
+  - task: itest
+    file: portfolio-service/ci/itest.yml
+    params:
+      <<: *cf-params
+      CF_APP_NAME: {{cf-portfolio-service-name}}
+      CF_APP_SERVICES: {{cf-portfolio-service-services}}
+      CF_ARTIFACT_ID: portfolio
 
 - name: portfolio-major
   serial_groups: [ portfolio-version ]
@@ -82,20 +132,24 @@ jobs:
   - put: portfolio-version
     params: { file: portfolio-version/number }
 
-- name: build-quotes-service
+- name: build-quotes
+  serial_groups: [ quotes-version ]
   plan:
-    - get: quotes
-      resource: quotes-service
-      trigger: true
-    - get: version
-      resource: quotes-version
-      params: { pre: rc }
-    - task: build
-      file: quotes/ci/build.yml
-    - put: quotes-milestones
-      params: { file: build/quotes-*.jar }
-    - put: quotes-version
-      params: { file: version/number }
+  - get: pipeline
+  - get: project
+    resource: quotes-service
+    trigger: true
+  - get: version
+    resource: quotes-version
+    params: { pre: rc }
+  - task: build
+    file: pipeline/ci/build.yml
+    params:
+      ARTIFACT_ID: quotes
+  - put: quotes-milestone
+    params: { file: build/quotes-*.jar }
+  - put: quotes-version
+    params: { file: version/number }
 
 - name: quotes-major
   serial_groups: [ quotes-version ]
@@ -114,20 +168,24 @@ jobs:
   - put: quotes-version
     params: { file: quotes-version/number }
 
-- name: build-web-ui
+- name: build-web
+  serial_groups: [ web-version ]
   plan:
-    - get: web
-      resource: web-ui
-      trigger: true
-    - get: version
-      resource: web-version
-      params: { pre: rc }
-    - task: build
-      file: web/ci/build.yml
-    - put: web-milestones
-      params: { file: build/web-*.jar }
-    - put: web-version
-      params: { file: version/number }
+  - get: pipeline
+  - get: project
+    resource: web-ui
+    trigger: true
+  - get: version
+    resource: web-version
+    params: { pre: rc }
+  - task: build
+    file: pipeline/ci/build.yml
+    params:
+      ARTIFACT_ID: web
+  - put: web-milestone
+    params: { file: build/web-*.jar }
+  - put: web-version
+    params: { file: version/number }
 
 - name: web-major
   serial_groups: [ web-version ]
@@ -147,6 +205,13 @@ jobs:
     params: { file: web-version/number }
 
 resources:
+- name: pipeline
+  type: git
+  source:
+    uri: {{pipeline-git-uri}}
+    branch: {{pipeline-git-branch}}
+    privage_key: {{git-private-key}}
+
 - name: accounts-service
   type: git
   source:
@@ -164,19 +229,19 @@ resources:
     initial_version: 1.0.0-rc.0
     private_key: {{git-private-key}}
 
-- name: accounts-milestones
+- name: accounts-milestone
   type: s3
   source:
-    bucket: {{s3-bucket-milestones}}
+    bucket: {{s3-bucket-milestone}}
     regexp: accounts-(.*).jar
     access_key_id: {{s3-access-key-id}}
     secret_access_key: {{s3-secret-access-key}}
     endpoint: {{s3-endpoint}}
 
-- name: accounts-releases
+- name: accounts-release
   type: s3
   source:
-    bucket: {{s3-bucket-releases}}
+    bucket: {{s3-bucket-release}}
     regexp: accounts-(.*).jar
     access_key_id: {{s3-access-key-id}}
     secret_access_key: {{s3-secret-access-key}}
@@ -199,19 +264,19 @@ resources:
     initial_version: 1.0.0-rc.0
     private_key: {{git-private-key}}
 
-- name: portfolio-milestones
+- name: portfolio-milestone
   type: s3
   source:
-    bucket: {{s3-bucket-milestones}}
+    bucket: {{s3-bucket-milestone}}
     regexp: portfolio-(.*).jar
     access_key_id: {{s3-access-key-id}}
     secret_access_key: {{s3-secret-access-key}}
     endpoint: {{s3-endpoint}}
 
-- name: portfolio-releases
+- name: portfolio-release
   type: s3
   source:
-    bucket: {{s3-bucket-releases}}
+    bucket: {{s3-bucket-release}}
     regexp: portfolio-(.*).jar
     access_key_id: {{s3-access-key-id}}
     secret_access_key: {{s3-secret-access-key}}
@@ -234,19 +299,19 @@ resources:
     initial_version: 1.0.0-rc.0
     private_key: {{git-private-key}}
 
-- name: quotes-milestones
+- name: quotes-milestone
   type: s3
   source:
-    bucket: {{s3-bucket-milestones}}
+    bucket: {{s3-bucket-milestone}}
     regexp: quotes-(.*).jar
     access_key_id: {{s3-access-key-id}}
     secret_access_key: {{s3-secret-access-key}}
     endpoint: {{s3-endpoint}}
 
-- name: quotes-releases
+- name: quotes-release
   type: s3
   source:
-    bucket: {{s3-bucket-releases}}
+    bucket: {{s3-bucket-release}}
     regexp: quotes-(.*).jar
     access_key_id: {{s3-access-key-id}}
     secret_access_key: {{s3-secret-access-key}}
@@ -269,19 +334,19 @@ resources:
     initial_version: 1.0.0-rc.0
     private_key: {{git-private-key}}
 
-- name: web-milestones
+- name: web-milestone
   type: s3
   source:
-    bucket: {{s3-bucket-milestones}}
+    bucket: {{s3-bucket-milestone}}
     regexp: web-(.*).jar
     access_key_id: {{s3-access-key-id}}
     secret_access_key: {{s3-secret-access-key}}
     endpoint: {{s3-endpoint}}
 
-- name: web-releases
+- name: web-release
   type: s3
   source:
-    bucket: {{s3-bucket-releases}}
+    bucket: {{s3-bucket-release}}
     regexp: web-(.*).jar
     access_key_id: {{s3-access-key-id}}
     secret_access_key: {{s3-secret-access-key}}

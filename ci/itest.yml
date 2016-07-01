@@ -8,8 +8,9 @@ image_resource:
     tag: 'latest'
 
 inputs:
-- name: accounts-service
-- name: accounts-milestone
+- name: pipeline
+- name: project
+- name: release
 
 outputs:
 - name: itest
@@ -25,6 +26,8 @@ params:
   CF_CONFIG_SERVER_URI:
   CF_CONFIG_SERVER_LABEL:
   CF_DB_SERVICE:
+  CF_APP_SERVICES:
+  CF_ARTIFACT_ID:
 
 run:
-  path: accounts-service/ci/itest.sh
+  path: pipeline/ci/itest.sh

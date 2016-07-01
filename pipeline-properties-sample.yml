@@ -1,4 +1,6 @@
 ---
+pipeline-git-uri: https://github.com/.../cf-SpringBootTrader.git
+pipeline-git-branch: master
 accounts-service-git-uri: git@github.com:.../accounts-service.git
 accounts-service-git-branch: master
 accounts-version-git-uri: git@github.com:.../accounts-service.git
@@ -16,11 +18,29 @@ web-ui-git-branch: master
 web-version-git-uri: git@github.com:.../web-ui.git
 web-version-git-branch: version
 s3-endpoint: s3.amazonaws.com
-s3-access-key-id: SAMPLEA987DFGES8R7GA
-s3-secret-access-key: SAMPLE97efqjwehrf87werogw8oiufhw8eo7fhqw
-s3-bucket-milestones: pivotal-bank-release-candidates
-s3-bucket-releases: pivotal-bank-releases
+s3-access-key-id: SAMPLE786ASFD67AFT68
+s3-secret-access-key: SAMPLE976a9gefa79w6egfa79w6efga97we6fgaw
+s3-bucket-milestone: pivotal-bank-release-candidates
+s3-bucket-release: pivotal-bank-release
+cf-api-url: https://api.run.pivotal.io
+cf-username: jdoe
+cf-password: mysecret
+cf-skip-ssl: false
+cf-org: myorg
+cf-space: myspace
+cf-config-server-uri: https://github.com/.../cf-SpringBootTrader-config.git
+cf-config-server-label: master
+#cf-db-service: p-mysql 100mb-dev traderdb
+cf-db-service: cleardb spark traderdb
+cf-accounts-service-name: accounts-service
+cf-accounts-service-services: traderdb, discovery-service, circuit-breaker-dashboard, config-server
+cf-portfolio-service-name: portfolio-service
+cf-portfolio-service-services: traderdb, discovery-service, circuit-breaker-dashboard, config-server
+cf-quotes-service-name: quotes-service
+cf-quotes-service-services: discovery-service, circuit-breaker-dashboard, config-server
+cf-web-ui-name: web-ui
+cf-web-service-services: discovery-service, circuit-breaker-dashboard, config-server
 git-private-key: |
   -----BEGIN RSA PRIVATE KEY-----
-  SAMPLE...
+  ...
   -----END RSA PRIVATE KEY-----

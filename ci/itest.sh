@@ -65,7 +65,7 @@ if [ -z "$HAS_SERVICE" ]; then
   SLEEP=110
 fi
 
-ARTIFACT=$(ls accounts-milestone/accounts-*.jar)
+ARTIFACT=$(ls release/$CF_ARTIFACT_ID-*.jar)
 
 cat <<EOF >manifest.yml
 ---
@@ -76,11 +76,7 @@ applications:
   memory: 512M
   instances: 1
   timeout: 180
-  services:
-  - traderdb
-  - discovery-service
-  - circuit-breaker-dashboard
-  - config-server
+  services: [ $CF_APP_SERVICES ]
   env:
     SPRING_PROFILES_ACTIVE: cloud
     JAVA_OPTS: -Djava.security.egd=file:///dev/urandom

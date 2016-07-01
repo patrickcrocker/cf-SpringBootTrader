@@ -10,6 +10,7 @@ groups:
   - itest-quotes
   - build-web
   - itest-web
+  - itest-all
 - name: publish
   jobs:
   - accounts-major
@@ -32,20 +33,19 @@ cf-params: &cf-params
   CF_CONFIG_SERVER_URI: {{cf-config-server-uri}}
   CF_CONFIG_SERVER_LABEL: {{cf-config-server-label}}
   CF_DB_SERVICE: {{cf-db-service}}
-  CF_APP_SERVICES: {{cf-accounts-service-services}}
-  CF_ARTIFACT_ID: accounts
 
 jobs:
 - name: build-accounts
   serial_groups: [ accounts-version ]
   plan:
-  - get: pipeline
-  - get: project
-    resource: accounts-service
-    trigger: true
-  - get: version
-    resource: accounts-version
-    params: { pre: rc }
+  - aggregate:
+    - get: pipeline
+    - get: project
+      resource: accounts-service
+      trigger: true
+    - get: version
+      resource: accounts-version
+      params: { pre: rc }
   - task: build
     file: pipeline/ci/build.yml
     params:
@@ -58,11 +58,12 @@ jobs:
 - name: itest-accounts
   serial: true
   plan:
-  - get: pipeline
-  - get: release
-    resource: accounts-milestone
-    passed: [ build-accounts ]
-    trigger: true
+  - aggregate:
+    - get: pipeline
+    - get: release
+      resource: accounts-milestone
+      passed: [ build-accounts ]
+      trigger: true
   - task: itest
     file: pipeline/ci/itest.yml
     params:
@@ -80,7 +81,6 @@ jobs:
     params: { file: accounts-version/number }
 
 - name: accounts-minor
-  public: true
   serial_groups: [ accounts-version ]
   plan:
   - get: accounts-version
@@ -91,13 +91,14 @@ jobs:
 - name: build-portfolio
   serial_groups: [ portfolio-version ]
   plan:
-  - get: pipeline
-  - get: project
-    resource: portfolio-service
-    trigger: true
-  - get: version
-    resource: portfolio-version
-    params: { pre: rc }
+  - aggregate:
+    - get: pipeline
+    - get: project
+      resource: portfolio-service
+      trigger: true
+    - get: version
+      resource: portfolio-version
+      params: { pre: rc }
   - task: build
     file: pipeline/ci/build.yml
     params:
@@ -110,11 +111,12 @@ jobs:
 - name: itest-portfolio
   serial: true
   plan:
-  - get: pipeline
-  - get: release
-    resource: portfolio-milestone
-    passed: [ build-portfolio ]
-    trigger: true
+  - aggregate:
+    - get: pipeline
+    - get: release
+      resource: portfolio-milestone
+      passed: [ build-portfolio ]
+      trigger: true
   - task: itest
     file: pipeline/ci/itest.yml
     params:
@@ -132,7 +134,6 @@ jobs:
     params: { file: portfolio-version/number }
 
 - name: portfolio-minor
-  public: true
   serial_groups: [ portfolio-version ]
   plan:
   - get: portfolio-version
@@ -143,13 +144,14 @@ jobs:
 - name: build-quotes
   serial_groups: [ quotes-version ]
   plan:
-  - get: pipeline
-  - get: project
-    resource: quotes-service
-    trigger: true
-  - get: version
-    resource: quotes-version
-    params: { pre: rc }
+  - aggregate:
+    - get: pipeline
+    - get: project
+      resource: quotes-service
+      trigger: true
+    - get: version
+      resource: quotes-version
+      params: { pre: rc }
   - task: build
     file: pipeline/ci/build.yml
     params:
@@ -162,11 +164,12 @@ jobs:
 - name: itest-quotes
   serial: true
   plan:
-  - get: pipeline
-  - get: release
-    resource: quotes-milestone
-    passed: [ build-quotes ]
-    trigger: true
+  - aggregate:
+    - get: pipeline
+    - get: release
+      resource: quotes-milestone
+      passed: [ build-quotes ]
+      trigger: true
   - task: itest
     file: pipeline/ci/itest.yml
     params:
@@ -184,7 +187,6 @@ jobs:
     params: { file: quotes-version/number }
 
 - name: quotes-minor
-  public: true
   serial_groups: [ quotes-version ]
   plan:
   - get: quotes-version
@@ -195,13 +197,14 @@ jobs:
 - name: build-web
   serial_groups: [ web-version ]
   plan:
-  - get: pipeline
-  - get: project
-    resource: web-ui
-    trigger: true
-  - get: version
-    resource: web-version
-    params: { pre: rc }
+  - aggregate:
+    - get: pipeline
+    - get: project
+      resource: web-ui
+      trigger: true
+    - get: version
+      resource: web-version
+      params: { pre: rc }
   - task: build
     file: pipeline/ci/build.yml
     params:
@@ -214,11 +217,12 @@ jobs:
 - name: itest-web
   serial: true
   plan:
-  - get: pipeline
-  - get: release
-    resource: web-milestone
-    passed: [ build-web ]
-    trigger: true
+  - aggregate:
+    - get: pipeline
+    - get: release
+      resource: web-milestone
+      passed: [ build-web ]
+      trigger: true
   - task: itest
     file: pipeline/ci/itest.yml
     params:
@@ -236,13 +240,21 @@ jobs:
     params: { file: web-version/number }
 
 - name: web-minor
-  public: true
   serial_groups: [ web-version ]
   plan:
   - get: web-version
     params: { bump: minor, pre: rc }
   - put: web-version
     params: { file: web-version/number }
+
+- name: itest-all
+  serial: true
+  plan:
+  - get: pipeline
+    passed: [ itest-accounts, itest-portfolio, itest-quotes, itest-web ]
+    trigger: true
+  - task: itest-all
+    file: pipeline/ci/itest-all.yml
 
 resources:
 - name: pipeline

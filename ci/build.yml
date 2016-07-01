@@ -8,6 +8,7 @@ image_resource:
     tag: '8'
 
 inputs:
+- name: pipeline
 - name: project
 - name: version
 
@@ -19,4 +20,4 @@ params:
   ARTIFACT_ID:
 
 run:
-  path: project/ci/build.sh
+  path: pipeline/ci/build.sh

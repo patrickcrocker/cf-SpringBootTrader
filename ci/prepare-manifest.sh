@@ -26,4 +26,9 @@ applications:
     JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
     JBP_CONFIG_OPEN_JDK_JRE: '[memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: {metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5}  }]'
 EOF
+
+if [ "true" = "$CF_SKIP_SSL" ]; then
+  echo "    CF_TARGET: $CF_API_URL" >> manifest.yml
+fi
+
 popd

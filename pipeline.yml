@@ -68,7 +68,7 @@ jobs:
   plan:
   - aggregate:
     - get: pipeline
-      passed: [ prepare-itest-env ]
+      passed: [ build-accounts ]
     - get: release
       resource: accounts-milestone
       passed: [ build-accounts ]
@@ -127,7 +127,7 @@ jobs:
   plan:
   - aggregate:
     - get: pipeline
-      passed: [ prepare-itest-env ]
+      passed: [ build-portfolio ]
     - get: release
       resource: portfolio-milestone
       passed: [ build-portfolio ]
@@ -186,7 +186,7 @@ jobs:
   plan:
   - aggregate:
     - get: pipeline
-      passed: [ prepare-itest-env ]
+      passed: [ build-quotes ]
     - get: release
       resource: quotes-milestone
       passed: [ build-quotes ]
@@ -245,7 +245,7 @@ jobs:
   plan:
   - aggregate:
     - get: pipeline
-      passed: [ prepare-itest-env ]
+      passed: [ build-web ]
     - get: release
       resource: web-milestone
       passed: [ build-web ]

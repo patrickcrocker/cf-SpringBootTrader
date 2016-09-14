@@ -31,4 +31,7 @@ if [ "true" = "$CF_SKIP_SSL" ]; then
   echo "    CF_TARGET: $CF_API_URL" >> manifest.yml
 fi
 
+echo "Generated manifest:"
+cat manifest.yml
+
 popd

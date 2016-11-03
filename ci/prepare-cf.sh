@@ -49,7 +49,7 @@ fi
 
 HAS_SERVICE=$(cf services | grep config-server || true)
 if [ -z "$HAS_SERVICE" ]; then
-  cf create-service -c "{ \"git\": { \"uri\": \"$CF_CONFIG_SERVER_URI\", \"label\": \"$CF_CONFIG_SERVER_LABEL\" } }" p-config-server standard config-server
+  cf create-service p-config-server standard config-server -c "{ \"git\": { \"uri\": \"$CF_CONFIG_SERVER_URI\", \"label\": \"$CF_CONFIG_SERVER_LABEL\" } }"
   SLEEP=60
 fi
 

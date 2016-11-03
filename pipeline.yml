@@ -322,14 +322,14 @@ resources:
     secret_access_key: {{s3-secret-access-key}}
     endpoint: {{s3-endpoint}}
 
-- name: accounts-release
-  type: s3
-  source:
-    bucket: {{s3-bucket-release}}
-    regexp: accounts-(.*).jar
-    access_key_id: {{s3-access-key-id}}
-    secret_access_key: {{s3-secret-access-key}}
-    endpoint: {{s3-endpoint}}
+# - name: accounts-release
+#   type: s3
+#   source:
+#     bucket: {{s3-bucket-release}}
+#     regexp: accounts-(.*).jar
+#     access_key_id: {{s3-access-key-id}}
+#     secret_access_key: {{s3-secret-access-key}}
+#     endpoint: {{s3-endpoint}}
 
 - name: portfolio-service
   type: git
@@ -357,14 +357,14 @@ resources:
     secret_access_key: {{s3-secret-access-key}}
     endpoint: {{s3-endpoint}}
 
-- name: portfolio-release
-  type: s3
-  source:
-    bucket: {{s3-bucket-release}}
-    regexp: portfolio-(.*).jar
-    access_key_id: {{s3-access-key-id}}
-    secret_access_key: {{s3-secret-access-key}}
-    endpoint: {{s3-endpoint}}
+# - name: portfolio-release
+#   type: s3
+#   source:
+#     bucket: {{s3-bucket-release}}
+#     regexp: portfolio-(.*).jar
+#     access_key_id: {{s3-access-key-id}}
+#     secret_access_key: {{s3-secret-access-key}}
+#     endpoint: {{s3-endpoint}}
 
 - name: quotes-service
   type: git
@@ -392,14 +392,14 @@ resources:
     secret_access_key: {{s3-secret-access-key}}
     endpoint: {{s3-endpoint}}
 
-- name: quotes-release
-  type: s3
-  source:
-    bucket: {{s3-bucket-release}}
-    regexp: quotes-(.*).jar
-    access_key_id: {{s3-access-key-id}}
-    secret_access_key: {{s3-secret-access-key}}
-    endpoint: {{s3-endpoint}}
+# - name: quotes-release
+#   type: s3
+#   source:
+#     bucket: {{s3-bucket-release}}
+#     regexp: quotes-(.*).jar
+#     access_key_id: {{s3-access-key-id}}
+#     secret_access_key: {{s3-secret-access-key}}
+#     endpoint: {{s3-endpoint}}
 
 - name: web-ui
   type: git
@@ -427,14 +427,14 @@ resources:
     secret_access_key: {{s3-secret-access-key}}
     endpoint: {{s3-endpoint}}
 
-- name: web-release
-  type: s3
-  source:
-    bucket: {{s3-bucket-release}}
-    regexp: web-(.*).jar
-    access_key_id: {{s3-access-key-id}}
-    secret_access_key: {{s3-secret-access-key}}
-    endpoint: {{s3-endpoint}}
+# - name: web-release
+#   type: s3
+#   source:
+#     bucket: {{s3-bucket-release}}
+#     regexp: web-(.*).jar
+#     access_key_id: {{s3-access-key-id}}
+#     secret_access_key: {{s3-secret-access-key}}
+#     endpoint: {{s3-endpoint}}
 
 - name: cf-itest
   type: cf
@@ -446,12 +446,12 @@ resources:
     organization: {{cf-org}}
     space: {{cf-space}}
 
-- name: cf-prod
-  type: cf
-  source:
-    api: {{cf-api-url}}
-    skip_cert_check: true
-    username: {{cf-username}}
-    password: {{cf-password}}
-    organization: {{cf-org}}
-    space: {{cf-space}}
+# - name: cf-prod
+#   type: cf
+#   source:
+#     api: {{cf-api-url}}
+#     skip_cert_check: true
+#     username: {{cf-username}}
+#     password: {{cf-password}}
+#     organization: {{cf-org}}
+#     space: {{cf-space}}

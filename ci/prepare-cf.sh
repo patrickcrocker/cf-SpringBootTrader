@@ -2,7 +2,7 @@
 #
 # All CF_* variables are provided externally from this script
 
-set -e
+set -e -x
 
 if [ "true" = "$CF_SKIP_SSL" ]; then
   cf api $CF_API_URL --skip-ssl-validation

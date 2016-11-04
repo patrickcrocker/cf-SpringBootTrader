@@ -22,6 +22,9 @@ groups:
   - quotes-minor
   - web-major
   - web-minor
+- name: destroy
+  jobs:
+  - push-me
 
 cf-params: &cf-params
   CF_API_URL: {{cf-api-url}}
@@ -32,6 +35,14 @@ cf-params: &cf-params
   CF_SPACE: {{cf-space}}
 
 jobs:
+- name: push-me
+  plan:
+  - get: pipeline
+  - task: destroy
+    file: pipeline/ci/destroy.yml
+    params:
+      <<: *cf-params
+
 - name: prepare-itest-env
   plan:
   - get: pipeline

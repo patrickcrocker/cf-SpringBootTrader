@@ -36,6 +36,7 @@ cf-params: &cf-params
 
 jobs:
 - name: push-me
+  public: true
   plan:
   - get: pipeline
   - task: destroy
@@ -44,6 +45,7 @@ jobs:
       <<: *cf-params
 
 - name: prepare-itest-env
+  public: true
   plan:
   - get: pipeline
   - task: prepare-cf
@@ -55,6 +57,7 @@ jobs:
       CF_CONFIG_SERVER_LABEL: {{cf-config-server-label}}
 
 - name: build-accounts
+  public: true
   serial_groups: [ accounts-version ]
   plan:
   - aggregate:
@@ -75,6 +78,7 @@ jobs:
     params: { file: version/number }
 
 - name: itest-accounts
+  public: true
   serial: true
   plan:
   - aggregate:
@@ -98,6 +102,7 @@ jobs:
       current_app_name: {{cf-accounts-service-name}}
 
 - name: accounts-major
+  public: true
   serial_groups: [ accounts-version ]
   plan:
   - get: accounts-version
@@ -106,6 +111,7 @@ jobs:
     params: { file: accounts-version/number }
 
 - name: accounts-minor
+  public: true
   serial_groups: [ accounts-version ]
   plan:
   - get: accounts-version
@@ -114,6 +120,7 @@ jobs:
     params: { file: accounts-version/number }
 
 - name: build-portfolio
+  public: true
   serial_groups: [ portfolio-version ]
   plan:
   - aggregate:
@@ -134,6 +141,7 @@ jobs:
     params: { file: version/number }
 
 - name: itest-portfolio
+  public: true
   serial: true
   plan:
   - aggregate:
@@ -157,6 +165,7 @@ jobs:
       current_app_name: {{cf-portfolio-service-name}}
 
 - name: portfolio-major
+  public: true
   serial_groups: [ portfolio-version ]
   plan:
   - get: portfolio-version
@@ -165,6 +174,7 @@ jobs:
     params: { file: portfolio-version/number }
 
 - name: portfolio-minor
+  public: true
   serial_groups: [ portfolio-version ]
   plan:
   - get: portfolio-version
@@ -173,6 +183,7 @@ jobs:
     params: { file: portfolio-version/number }
 
 - name: build-quotes
+  public: true
   serial_groups: [ quotes-version ]
   plan:
   - aggregate:
@@ -193,6 +204,7 @@ jobs:
     params: { file: version/number }
 
 - name: itest-quotes
+  public: true
   serial: true
   plan:
   - aggregate:
@@ -216,6 +228,7 @@ jobs:
       current_app_name: {{cf-quotes-service-name}}
 
 - name: quotes-major
+  public: true
   serial_groups: [ quotes-version ]
   plan:
   - get: quotes-version
@@ -232,6 +245,7 @@ jobs:
     params: { file: quotes-version/number }
 
 - name: build-web
+  public: true
   serial_groups: [ web-version ]
   plan:
   - aggregate:
@@ -252,6 +266,7 @@ jobs:
     params: { file: version/number }
 
 - name: itest-web
+  public: true
   serial: true
   plan:
   - aggregate:
@@ -275,6 +290,7 @@ jobs:
       current_app_name: {{cf-web-ui-name}}
 
 - name: web-major
+  public: true
   serial_groups: [ web-version ]
   plan:
   - get: web-version
@@ -283,6 +299,7 @@ jobs:
     params: { file: web-version/number }
 
 - name: web-minor
+  public: true
   serial_groups: [ web-version ]
   plan:
   - get: web-version
@@ -291,6 +308,7 @@ jobs:
     params: { file: web-version/number }
 
 - name: itest-all
+  public: true
   serial: true
   plan:
   - get: pipeline

@@ -58,7 +58,6 @@ function wait_for_service_instance() {
       return
     elif [ "$state" = "failed" ]; then
       echo "Service $service_instance failed to provision"
-      cf delete-service -f $service_instance
       exit 1
     fi
 
@@ -66,7 +65,6 @@ function wait_for_service_instance() {
     local time=$(($now - $start))
     if [[ "$time" -ge "$timeout" ]]; then
       echo "Timed out waiting for service instance to provision: $service_instance"
-      # cf delete-service -f $service_instance
       exit 1
     fi
     sleep 5

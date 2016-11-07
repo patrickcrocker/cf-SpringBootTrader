@@ -37,6 +37,11 @@ function target_space() {
   cf target -s $space
 }
 
+function service_exists() {
+  local service_instance=$1
+  cf curl /v2/service_instances | jq -e --arg name $service_instance '.resources[] | select(.entity.name == $name) | true' >/dev/null
+}
+
 function wait_for_service_instance() {
   local service_instance=$1
   local timeout=${2:-300}

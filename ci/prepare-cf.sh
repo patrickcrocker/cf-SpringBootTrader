@@ -4,48 +4,13 @@
 
 set -e
 
-SERVICE_PROVISION_TIMEOUT=${SERVICE_PROVISION_TIMEOUT:-500}
+CF_SERVICE_PROVISION_TIMEOUT=${CF_SERVICE_PROVISION_TIMEOUT:-500}
 
-function wait_for_service_instance() {
-  service_instance=$1
+source $(dirname $0)/common.sh
 
-  guid=`cf service ${service_instance} --guid`
+login $CF_API_URL $CF_USERNAME $CF_PASSWORD $CF_SKIP_SSL
 
-  start=`date +%s`
-  while true; do
-    # Get the service instance info in JSON from CC and parse out the async 'state'
-    state=`cf curl /v2/service_instances/${guid} | jq -r .entity.last_operation.state`
-
-    if [ "$state" == "succeeded" ]; then
-      echo "Service ${service_instance} is ready"
-      return
-    elif [ "$state" == "failed" ]; then
-      echo "Service ${service_instance} failed to provision"
-      cf delete-service -f $service_instance
-      exit 1
-    fi
-
-    now=`date +%s`
-    time=$(($now - $start))
-    if [[ "$time" -ge "$SERVICE_PROVISION_TIMEOUT" ]]; then
-      echo "Timed out waiting for service instance to provision: ${service_instance}"
-      cf delete-service -f $service_instance
-      exit 1
-    fi
-    sleep 5
-  done
-}
-
-if [ "true" = "$CF_SKIP_SSL" ]; then
-  cf api $CF_API_URL --skip-ssl-validation
-else
-  cf api $CF_API_URL
-fi
-
-# Login to CF
-
-cf auth $CF_USERNAME $CF_PASSWORD
-
+create=true
 UUID=$(uuidgen)
 
 # Use temp org if none specified
@@ -53,50 +18,31 @@ if [ -z "$CF_ORG" ]; then
   CF_ORG="pivotal-bank-$UUID"
 fi
 
-HAS_ORG=$(cf orgs | grep $CF_ORG || true)
-if [ -z "$HAS_ORG" ]; then
-  cf create-org $CF_ORG
-fi
-
-cf target -o $CF_ORG
+target_org $CF_ORG $create
 
 # Use temp space if none specified
 if [ -z "$CF_SPACE" ]; then
   CF_SPACE="pivotal-bank-$UUID"
 fi
 
-HAS_SPACE=$(cf spaces | grep $CF_SPACE || true)
-if [ -z "$HAS_SPACE" ]; then
-  cf create-space $CF_SPACE
-fi
+target_space $CF_SPACE $create
 
-cf target -s $CF_SPACE
-
-SLEEP=0
-
-HAS_SERVICE=$(cf services | grep traderdb || true)
-if [ -z "$HAS_SERVICE" ]; then
+# Create Services
+if ! service_exists traderdb; then
   cf create-service $CF_DB_SERVICE
 fi
 
-HAS_SERVICE=$(cf services | grep config-server || true)
-if [ -z "$HAS_SERVICE" ]; then
+if ! service_exists config-server; then
   cf create-service p-config-server standard config-server -c "{ \"git\": { \"uri\": \"$CF_CONFIG_SERVER_URI\", \"label\": \"$CF_CONFIG_SERVER_LABEL\" } }"
-  wait_for_service_instance config-server
+  wait_for_service_instance config-server $CF_SERVICE_PROVISION_TIMEOUT
 fi
 
-HAS_SERVICE=$(cf services | grep discovery-service || true)
-if [ -z "$HAS_SERVICE" ]; then
+if ! service_exists discovery-service; then
   cf create-service p-service-registry standard discovery-service
-  wait_for_service_instance discovery-service
+  wait_for_service_instance discovery-service $CF_SERVICE_PROVISION_TIMEOUT
 fi
 
-HAS_SERVICE=$(cf services | grep circuit-breaker-dashboard || true)
-if [ -z "$HAS_SERVICE" ]; then
+if ! service_exists circuit-breaker-dashboard; then
   cf create-service p-circuit-breaker-dashboard standard circuit-breaker-dashboard
-  wait_for_service_instance circuit-breaker-dashboard
+  wait_for_service_instance circuit-breaker-dashboard $CF_SERVICE_PROVISION_TIMEOUT
 fi
-
-# give services time to spin up
-echo "waiting for services to initialize ($SLEEP seconds)"
-sleep $SLEEP

@@ -2,7 +2,7 @@
 #
 # All CF_* variables are provided externally from this script
 
-set -e -x
+set -e
 
 source $(dirname $0)/common.sh
 

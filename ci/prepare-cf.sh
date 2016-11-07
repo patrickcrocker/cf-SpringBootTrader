@@ -2,7 +2,7 @@
 #
 # All CF_* variables are provided externally from this script
 
-set -e -x
+set -e
 
 SERVICE_PROVISION_TIMEOUT=${SERVICE_PROVISION_TIMEOUT:-500}
 

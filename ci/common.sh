@@ -30,7 +30,7 @@ function target_space() {
   local space=$1
   local create=$2
 
-  if [ "$create" = "true" ] && ! (cf spaces | grep -q ^$org$); then
+  if [ "$create" = "true" ] && ! (cf spaces | grep -q ^$space$); then
     cf create-space $space
   fi
 

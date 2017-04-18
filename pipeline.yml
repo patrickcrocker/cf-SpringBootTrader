@@ -1,329 +1,401 @@
 ---
 groups:
-- name: develop
+- name: all
   jobs:
-  - prepare-itest-env
   - build-accounts
-  - itest-accounts
-  - build-portfolio
-  - itest-portfolio
-  - build-quotes
-  - itest-quotes
-  - build-web
-  - itest-web
-  - itest-all
-- name: publish
+  - test-accounts
+  - stage-accounts
+  - ship-accounts
+  - prod-accounts
+  - patch-accounts
+  - major-accounts
+  - minor-accounts
+- name: accounts
   jobs:
-  - accounts-major
-  - accounts-minor
-  - portfolio-major
-  - portfolio-minor
-  - quotes-major
-  - quotes-minor
-  - web-major
-  - web-minor
-- name: destroy
-  jobs:
-  - push-me
+  - build-accounts
+  - test-accounts
+  - stage-accounts
+  - ship-accounts
+  - prod-accounts
+  - patch-accounts
+  - major-accounts
+  - minor-accounts
 
-cf-params: &cf-params
-  CF_API_URL: {{cf-api-url}}
-  CF_SKIP_SSL: {{cf-skip-ssl}}
-  CF_USERNAME: {{cf-username}}
-  CF_PASSWORD: {{cf-password}}
-  CF_ORG: {{cf-org}}
-  CF_SPACE: {{cf-space}}
+maven-params: &maven-params
+  MAVEN_OPTS: {{maven-opts}}
+  MAVEN_CONFIG: {{maven-config}}
+  MAVEN_REPO_MIRROR: {{maven-mirror-url}}
+  MAVEN_REPO_USERNAME: {{maven-mirror-username}}
+  MAVEN_REPO_PASSWORD: {{maven-mirror-password}}
 
 jobs:
-- name: push-me
-  public: true
-  plan:
-  - get: pipeline
-  - task: destroy
-    file: pipeline/ci/destroy.yml
-    params:
-      <<: *cf-params
-
-- name: prepare-itest-env
-  public: true
-  plan:
-  - get: pipeline
-  - task: prepare-cf
-    file: pipeline/ci/prepare-cf.yml
-    params:
-      <<: *cf-params
-      CF_DB_SERVICE: {{cf-db-service}}
-      CF_CONFIG_SERVER_URI: {{cf-config-server-uri}}
-      CF_CONFIG_SERVER_LABEL: {{cf-config-server-label}}
-
 - name: build-accounts
   public: true
-  serial_groups: [ accounts-version ]
+  serial_groups: [accounts-version]
   plan:
   - aggregate:
-    - get: pipeline
+    - get: pipeline-tasks
     - get: project
       resource: accounts-service
       trigger: true
     - get: version
       resource: accounts-version
-      params: { pre: rc }
+      params: {pre: rc}
   - task: build
-    file: pipeline/ci/build.yml
+    file: pipeline-tasks/build-maven-semver/task.yml
     params:
-      ARTIFACT_ID: accounts
+      <<: *maven-params
   - put: accounts-milestone
-    params: { file: build-output/accounts-*.jar }
+    params:
+      file: task-output/accounts-*.jar
+      pom_file: project/pom.xml
+      version_file: version/version
   - put: accounts-version
-    params: { file: version/number }
+    params: { file: version/version }
 
-- name: itest-accounts
+- name: test-accounts
   public: true
-  serial: true
+  serial_groups: [accounts-version]
   plan:
   - aggregate:
-    - get: pipeline
+    - get: pipeline-tasks
+    - get: project
+      resource: accounts-service
       passed: [ build-accounts ]
-    - get: release
+    - get: accounts-version
+      passed: [build-accounts]
+    - get: artifact
       resource: accounts-milestone
       passed: [ build-accounts ]
       trigger: true
-  - task: prepare-manifest
-    file: pipeline/ci/prepare-manifest.yml
+  - put: cf-create-org
+    resource: cf-test
     params:
-      <<: *cf-params
-      CF_APP_NAME: {{cf-accounts-service-name}}
-      CF_APP_HOST: {{cf-accounts-service-host}}
-      CF_APP_SERVICES: {{cf-accounts-service-services}}
-      CF_ARTIFACT_ID: accounts
-  - put: cf-itest
+      create_org:
+        org: {{cf-test-org}}
+  - put: cf-create-space
+    resource: cf-test
     params:
-      manifest: prepare-manifest-output/manifest.yml
-      current_app_name: {{cf-accounts-service-name}}
+      create_space:
+        org: {{cf-test-org}}
+        space: {{cf-test-space}}
+  - aggregate:
+    - put: cf-create-db
+      resource: cf-test
+      params:
+        create_service:
+          org: {{cf-test-org}}
+          space: {{cf-test-space}}
+          service: {{cf-test-accounts-db-service}}
+          plan: {{cf-test-accounts-db-plan}}
+          service_instance: {{cf-test-accounts-db-si}}
+    - put: cf-create-config-server
+      resource: cf-test
+      params:
+        create_service:
+          org: {{cf-test-org}}
+          space: {{cf-test-space}}
+          service: {{cf-test-config-server-service}}
+          plan: {{cf-test-config-server-plan}}
+          service_instance: {{cf-test-config-server-si}}
+          configuration: {{cf-test-config-server-config}}
+          wait_for_service: true
+    - put: cf-create-service-registry
+      resource: cf-test
+      params:
+        create_service:
+          org: {{cf-test-org}}
+          space: {{cf-test-space}}
+          service: {{cf-test-service-registry-service}}
+          plan: {{cf-test-service-registry-plan}}
+          service_instance: {{cf-test-service-registry-si}}
+          configuration: {{cf-test-service-registry-config}}
+          wait_for_service: true
+    - put: cf-create-circuit-breaker-dashboard
+      resource: cf-test
+      params:
+        create_service:
+          org: {{cf-test-org}}
+          space: {{cf-test-space}}
+          service: {{cf-test-circuit-breaker-dashboard-service}}
+          plan: {{cf-test-circuit-breaker-dashboard-plan}}
+          service_instance: {{cf-test-circuit-breaker-dashboard-si}}
+          configuration: {{cf-test-circuit-breaker-dashboard-config}}
+          wait_for_service: true
+  - task: generate-manifest
+    file: pipeline-tasks/generate-manifest/task.yml
+    params:
+      CF_APP_NAME: {{cf-test-accounts-name}}
+      CF_APP_HOST: {{cf-test-accounts-host}}
+      CF_APP_PATH: accounts-*.jar
+      CF_APP_MEMORY: 640M
+      CF_APP_TIMEOUT: 180
+      CF_APP_SERVICES: [{{cf-test-accounts-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
+      CF_APP_ENV_VARS:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
+        JBP_CONFIG_OPEN_JDK_JRE: '[memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: {metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5}  }]'
+  - put: cf-push
+    resource: cf-test
+    params:
+      zero_downtime_push:
+        org: {{cf-test-org}}
+        space: {{cf-test-space}}
+        manifest: task-output/manifest.yml
+        current_app_name: {{cf-test-accounts-name}}
+  - task: integration-tests
+    file: pipeline-tasks/run-maven-itests/task.yml
+    params:
+      <<: *maven-params
+      APP_URL: {{cf-test-accounts-url}}
 
-- name: accounts-major
+- name: stage-accounts
   public: true
-  serial_groups: [ accounts-version ]
+  serial_groups: [accounts-version]
+  plan:
+  - aggregate:
+    - get: pipeline-tasks
+    - get: project
+      resource: accounts-service
+      passed: [test-accounts]
+    - get: accounts-version
+      passed: [test-accounts]
+    - get: artifact
+      resource: accounts-milestone
+      passed: [ test-accounts ]
+      trigger: true
+  - put: cf-create-org
+    resource: cf-stage
+    params:
+      create_org:
+        org: {{cf-stage-org}}
+  - put: cf-create-space
+    resource: cf-stage
+    params:
+      create_space:
+        org: {{cf-stage-org}}
+        space: {{cf-stage-space}}
+  - aggregate:
+    - put: cf-create-db
+      resource: cf-stage
+      params:
+        create_service:
+          org: {{cf-stage-org}}
+          space: {{cf-stage-space}}
+          service: {{cf-stage-accounts-db-service}}
+          plan: {{cf-stage-accounts-db-plan}}
+          service_instance: {{cf-stage-accounts-db-si}}
+    - put: cf-create-config-server
+      resource: cf-stage
+      params:
+        create_service:
+          org: {{cf-stage-org}}
+          space: {{cf-stage-space}}
+          service: {{cf-stage-config-server-service}}
+          plan: {{cf-stage-config-server-plan}}
+          service_instance: {{cf-stage-config-server-si}}
+          configuration: {{cf-stage-config-server-config}}
+          wait_for_service: true
+    - put: cf-create-service-registry
+      resource: cf-stage
+      params:
+        create_service:
+          org: {{cf-stage-org}}
+          space: {{cf-stage-space}}
+          service: {{cf-stage-service-registry-service}}
+          plan: {{cf-stage-service-registry-plan}}
+          service_instance: {{cf-stage-service-registry-si}}
+          configuration: {{cf-stage-service-registry-config}}
+          wait_for_service: true
+    - put: cf-create-circuit-breaker-dashboard
+      resource: cf-stage
+      params:
+        create_service:
+          org: {{cf-stage-org}}
+          space: {{cf-stage-space}}
+          service: {{cf-stage-circuit-breaker-dashboard-service}}
+          plan: {{cf-stage-circuit-breaker-dashboard-plan}}
+          service_instance: {{cf-stage-circuit-breaker-dashboard-si}}
+          configuration: {{cf-stage-circuit-breaker-dashboard-config}}
+          wait_for_service: true
+  - task: generate-manifest
+    file: pipeline-tasks/generate-manifest/task.yml
+    params:
+      CF_APP_NAME: {{cf-stage-accounts-name}}
+      CF_APP_HOST: {{cf-stage-accounts-host}}
+      CF_APP_PATH: accounts-*.jar
+      CF_APP_MEMORY: 640M
+      CF_APP_TIMEOUT: 180
+      CF_APP_SERVICES: [{{cf-stage-accounts-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
+      CF_APP_ENV_VARS:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
+        JBP_CONFIG_OPEN_JDK_JRE: '[memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: {metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5}  }]'
+  - put: cf-push
+    resource: cf-stage
+    params:
+      zero_downtime_push:
+        org: {{cf-stage-org}}
+        space: {{cf-stage-space}}
+        manifest: task-output/manifest.yml
+        current_app_name: {{cf-stage-accounts-name}}
+  - task: integration-tests
+    file: pipeline-tasks/run-maven-itests/task.yml
+    params:
+      <<: *maven-params
+      APP_URL: {{cf-stage-accounts-url}}
+
+- name: ship-accounts
+  public: true
+  serial_groups: [accounts-version]
+  plan:
+  - aggregate:
+    - get: project
+      resource: accounts-service
+      passed: [stage-accounts]
+    - get: accounts-milestone
+      passed: [stage-accounts]
+    - get: accounts-version
+      passed: [stage-accounts]
+      params: {bump: final}
+  - put: accounts-release
+    params:
+      file: accounts-milestone/accounts-*.jar
+      pom_file: project/pom.xml
+      version_file: version/version
+  - put: accounts-version
+    params: {file: version/version}
+
+- name: prod-accounts
+  public: true
+  serial_groups: [accounts-version]
+  plan:
+  - aggregate:
+    - get: artifact
+      resource: accounts-release
+      passed: [ship-accounts]
+    - get: accounts-version
+      passed: [ship-accounts]
+    - get: pipeline-tasks
+    - get: project
+      resource: accounts-service
+      passed: [ship-accounts]
+  - put: cf-create-org
+    resource: cf-prod
+    params:
+      create_org:
+        org: {{cf-prod-org}}
+  - put: cf-create-space
+    resource: cf-prod
+    params:
+      create_space:
+        org: {{cf-prod-org}}
+        space: {{cf-prod-space}}
+  - aggregate:
+    - put: cf-create-db
+      resource: cf-prod
+      params:
+        create_service:
+          org: {{cf-prod-org}}
+          space: {{cf-prod-space}}
+          service: {{cf-prod-accounts-db-service}}
+          plan: {{cf-prod-accounts-db-plan}}
+          service_instance: {{cf-prod-accounts-db-si}}
+    - put: cf-create-config-server
+      resource: cf-prod
+      params:
+        create_service:
+          org: {{cf-prod-org}}
+          space: {{cf-prod-space}}
+          service: {{cf-prod-config-server-service}}
+          plan: {{cf-prod-config-server-plan}}
+          service_instance: {{cf-prod-config-server-si}}
+          configuration: {{cf-prod-config-server-config}}
+          wait_for_service: true
+    - put: cf-create-service-registry
+      resource: cf-prod
+      params:
+        create_service:
+          org: {{cf-prod-org}}
+          space: {{cf-prod-space}}
+          service: {{cf-prod-service-registry-service}}
+          plan: {{cf-prod-service-registry-plan}}
+          service_instance: {{cf-prod-service-registry-si}}
+          configuration: {{cf-prod-service-registry-config}}
+          wait_for_service: true
+    - put: cf-create-circuit-breaker-dashboard
+      resource: cf-prod
+      params:
+        create_service:
+          org: {{cf-prod-org}}
+          space: {{cf-prod-space}}
+          service: {{cf-prod-circuit-breaker-dashboard-service}}
+          plan: {{cf-prod-circuit-breaker-dashboard-plan}}
+          service_instance: {{cf-prod-circuit-breaker-dashboard-si}}
+          configuration: {{cf-prod-circuit-breaker-dashboard-config}}
+          wait_for_service: true
+  - task: generate-manifest
+    file: pipeline-tasks/generate-manifest/task.yml
+    params:
+      CF_APP_NAME: {{cf-prod-accounts-name}}
+      CF_APP_HOST: {{cf-prod-accounts-host}}
+      CF_APP_PATH: accounts-*.jar
+      CF_APP_MEMORY: 640M
+      CF_APP_TIMEOUT: 180
+      CF_APP_SERVICES: [{{cf-prod-accounts-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
+      CF_APP_ENV_VARS:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
+        JBP_CONFIG_OPEN_JDK_JRE: '[memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: {metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5}  }]'
+  - put: cf-push
+    resource: cf-prod
+    params:
+      zero_downtime_push:
+        org: {{cf-prod-org}}
+        space: {{cf-prod-space}}
+        manifest: task-output/manifest.yml
+        current_app_name: {{cf-prod-accounts-name}}
+  - task: integration-tests
+    file: pipeline-tasks/run-maven-itests/task.yml
+    params:
+      <<: *maven-params
+      APP_URL: {{cf-prod-accounts-url}}
+
+- name: patch-accounts
+  public: true
+  serial_groups: [accounts-version]
   plan:
   - get: accounts-version
-    params: { bump: major, pre: rc }
-  - put: accounts-version
-    params: { file: accounts-version/number }
-
-- name: accounts-minor
-  public: true
-  serial_groups: [ accounts-version ]
-  plan:
-  - get: accounts-version
-    params: { bump: minor, pre: rc }
-  - put: accounts-version
-    params: { file: accounts-version/number }
-
-- name: build-portfolio
-  public: true
-  serial_groups: [ portfolio-version ]
-  plan:
-  - aggregate:
-    - get: pipeline
-    - get: project
-      resource: portfolio-service
-      trigger: true
-    - get: version
-      resource: portfolio-version
-      params: { pre: rc }
-  - task: build
-    file: pipeline/ci/build.yml
-    params:
-      ARTIFACT_ID: portfolio
-  - put: portfolio-milestone
-    params: { file: build-output/portfolio-*.jar }
-  - put: portfolio-version
-    params: { file: version/number }
-
-- name: itest-portfolio
-  public: true
-  serial: true
-  plan:
-  - aggregate:
-    - get: pipeline
-      passed: [ build-portfolio ]
-    - get: release
-      resource: portfolio-milestone
-      passed: [ build-portfolio ]
-      trigger: true
-  - task: prepare-manifest
-    file: pipeline/ci/prepare-manifest.yml
-    params:
-      <<: *cf-params
-      CF_APP_NAME: {{cf-portfolio-service-name}}
-      CF_APP_HOST: {{cf-portfolio-service-host}}
-      CF_APP_SERVICES: {{cf-portfolio-service-services}}
-      CF_ARTIFACT_ID: portfolio
-  - put: cf-itest
-    params:
-      manifest: prepare-manifest-output/manifest.yml
-      current_app_name: {{cf-portfolio-service-name}}
-
-- name: portfolio-major
-  public: true
-  serial_groups: [ portfolio-version ]
-  plan:
-  - get: portfolio-version
-    params: { bump: major, pre: rc }
-  - put: portfolio-version
-    params: { file: portfolio-version/number }
-
-- name: portfolio-minor
-  public: true
-  serial_groups: [ portfolio-version ]
-  plan:
-  - get: portfolio-version
-    params: { bump: minor, pre: rc }
-  - put: portfolio-version
-    params: { file: portfolio-version/number }
-
-- name: build-quotes
-  public: true
-  serial_groups: [ quotes-version ]
-  plan:
-  - aggregate:
-    - get: pipeline
-    - get: project
-      resource: quotes-service
-      trigger: true
-    - get: version
-      resource: quotes-version
-      params: { pre: rc }
-  - task: build
-    file: pipeline/ci/build.yml
-    params:
-      ARTIFACT_ID: quotes
-  - put: quotes-milestone
-    params: { file: build-output/quotes-*.jar }
-  - put: quotes-version
-    params: { file: version/number }
-
-- name: itest-quotes
-  public: true
-  serial: true
-  plan:
-  - aggregate:
-    - get: pipeline
-      passed: [ build-quotes ]
-    - get: release
-      resource: quotes-milestone
-      passed: [ build-quotes ]
-      trigger: true
-  - task: prepare-manifest
-    file: pipeline/ci/prepare-manifest.yml
-    params:
-      <<: *cf-params
-      CF_APP_NAME: {{cf-quotes-service-name}}
-      CF_APP_HOST: {{cf-quotes-service-host}}
-      CF_APP_SERVICES: {{cf-quotes-service-services}}
-      CF_ARTIFACT_ID: quotes
-  - put: cf-itest
-    params:
-      manifest: prepare-manifest-output/manifest.yml
-      current_app_name: {{cf-quotes-service-name}}
-
-- name: quotes-major
-  public: true
-  serial_groups: [ quotes-version ]
-  plan:
-  - get: quotes-version
-    params: { bump: major, pre: rc }
-  - put: quotes-version
-    params: { file: quotes-version/number }
-
-- name: quotes-minor
-  serial_groups: [ quotes-version ]
-  plan:
-  - get: quotes-version
-    params: { bump: minor, pre: rc }
-  - put: quotes-version
-    params: { file: quotes-version/number }
-
-- name: build-web
-  public: true
-  serial_groups: [ web-version ]
-  plan:
-  - aggregate:
-    - get: pipeline
-    - get: project
-      resource: web-ui
-      trigger: true
-    - get: version
-      resource: web-version
-      params: { pre: rc }
-  - task: build
-    file: pipeline/ci/build.yml
-    params:
-      ARTIFACT_ID: web
-  - put: web-milestone
-    params: { file: build-output/web-*.jar }
-  - put: web-version
-    params: { file: version/number }
-
-- name: itest-web
-  public: true
-  serial: true
-  plan:
-  - aggregate:
-    - get: pipeline
-      passed: [ build-web ]
-    - get: release
-      resource: web-milestone
-      passed: [ build-web ]
-      trigger: true
-  - task: prepare-manifest
-    file: pipeline/ci/prepare-manifest.yml
-    params:
-      <<: *cf-params
-      CF_APP_NAME: {{cf-web-ui-name}}
-      CF_APP_HOST: {{cf-web-ui-host}}
-      CF_APP_SERVICES: {{cf-web-ui-services}}
-      CF_ARTIFACT_ID: web
-  - put: cf-itest
-    params:
-      manifest: prepare-manifest-output/manifest.yml
-      current_app_name: {{cf-web-ui-name}}
-
-- name: web-major
-  public: true
-  serial_groups: [ web-version ]
-  plan:
-  - get: web-version
-    params: { bump: major, pre: rc }
-  - put: web-version
-    params: { file: web-version/number }
-
-- name: web-minor
-  public: true
-  serial_groups: [ web-version ]
-  plan:
-  - get: web-version
-    params: { bump: minor, pre: rc }
-  - put: web-version
-    params: { file: web-version/number }
-
-- name: itest-all
-  public: true
-  serial: true
-  plan:
-  - get: pipeline
-    passed: [ itest-accounts, itest-portfolio, itest-quotes, itest-web ]
+    passed: [ship-accounts]
+    params: {bump: patch, pre: rc}
     trigger: true
-  - task: itest-all
-    file: pipeline/ci/itest-all.yml
+  - put: accounts-version
+    params: {file: version/version}
+
+- name: major-accounts
+  public: true
+  serial_groups: [ accounts-version ]
+  plan:
+  - get: accounts-version
+    params: { bump: major, pre: rc }
+  - put: accounts-version
+    params: { file: accounts-version/version }
+
+- name: minor-accounts
+  public: true
+  serial_groups: [ accounts-version ]
+  plan:
+  - get: accounts-version
+    params: { bump: minor, pre: rc }
+  - put: accounts-version
+    params: { file: accounts-version/version }
 
 resources:
-- name: pipeline
+- name: pipeline-tasks
   type: git
   source:
-    uri: {{pipeline-git-uri}}
-    branch: {{pipeline-git-branch}}
-    privage_key: {{git-private-key}}
+    uri: {{pipeline-tasks-git-uri}}
+    branch: {{pipeline-tasks-git-branch}}
 
 - name: accounts-service
   type: git
@@ -338,149 +410,61 @@ resources:
     driver: git
     uri: {{accounts-version-git-uri}}
     branch: {{accounts-version-git-branch}}
-    file: number
+    file: version
     initial_version: 1.0.0-rc.0
     private_key: {{git-private-key}}
 
 - name: accounts-milestone
-  type: s3
+  type: maven-resource
   source:
-    bucket: {{s3-bucket-milestone}}
-    regexp: accounts-(.*).jar
-    access_key_id: {{s3-access-key-id}}
-    secret_access_key: {{s3-secret-access-key}}
-    endpoint: {{s3-endpoint}}
+    url: {{maven-milestone-url}}
+    artifact: io.pivotal.bank:accounts:jar
+    username: {{maven-milestone-username}}
+    password: {{maven-milestone-password}}
+    skip_cert_check: {{maven-milestone-skip-ssl}}
 
-# - name: accounts-release
-#   type: s3
-#   source:
-#     bucket: {{s3-bucket-release}}
-#     regexp: accounts-(.*).jar
-#     access_key_id: {{s3-access-key-id}}
-#     secret_access_key: {{s3-secret-access-key}}
-#     endpoint: {{s3-endpoint}}
-
-- name: portfolio-service
-  type: git
+- name: accounts-release
+  type: maven-resource
   source:
-    uri: {{portfolio-service-git-uri}}
-    branch: {{portfolio-service-git-branch}}
-    private_key: {{git-private-key}}
+    url: {{maven-release-url}}
+    artifact: io.pivotal.bank:accounts:jar
+    username: {{maven-release-username}}
+    password: {{maven-release-password}}
+    skip_cert_check: {{maven-release-skip-ssl}}
 
-- name: portfolio-version
-  type: semver
+- name: cf-test
+  type: cf-cli-resource
   source:
-    driver: git
-    uri: {{portfolio-version-git-uri}}
-    branch: {{portfolio-version-git-branch}}
-    file: number
-    initial_version: 1.0.0-rc.0
-    private_key: {{git-private-key}}
+    api: {{cf-test-api-url}}
+    skip_cert_check: {{cf-test-skip-ssl}}
+    username: {{cf-test-username}}
+    password: {{cf-test-password}}
 
-- name: portfolio-milestone
-  type: s3
+- name: cf-stage
+  type: cf-cli-resource
   source:
-    bucket: {{s3-bucket-milestone}}
-    regexp: portfolio-(.*).jar
-    access_key_id: {{s3-access-key-id}}
-    secret_access_key: {{s3-secret-access-key}}
-    endpoint: {{s3-endpoint}}
+    api: {{cf-stage-api-url}}
+    skip_cert_check: {{cf-stage-skip-ssl}}
+    username: {{cf-stage-username}}
+    password: {{cf-stage-password}}
 
-# - name: portfolio-release
-#   type: s3
-#   source:
-#     bucket: {{s3-bucket-release}}
-#     regexp: portfolio-(.*).jar
-#     access_key_id: {{s3-access-key-id}}
-#     secret_access_key: {{s3-secret-access-key}}
-#     endpoint: {{s3-endpoint}}
-
-- name: quotes-service
-  type: git
+- name: cf-prod
+  type: cf-cli-resource
   source:
-    uri: {{quotes-service-git-uri}}
-    branch: {{quotes-service-git-branch}}
-    private_key: {{git-private-key}}
+    api: {{cf-prod-api-url}}
+    skip_cert_check: {{cf-prod-skip-ssl}}
+    username: {{cf-prod-username}}
+    password: {{cf-prod-password}}
 
-- name: quotes-version
-  type: semver
+resource_types:
+- name: maven-resource
+  type: docker-image
   source:
-    driver: git
-    uri: {{quotes-version-git-uri}}
-    branch: {{quotes-version-git-branch}}
-    file: number
-    initial_version: 1.0.0-rc.0
-    private_key: {{git-private-key}}
+    repository: patrickcrocker/maven-resource
+    tag: 1.3.1
 
-- name: quotes-milestone
-  type: s3
+- name: cf-cli-resource
+  type: docker-image
   source:
-    bucket: {{s3-bucket-milestone}}
-    regexp: quotes-(.*).jar
-    access_key_id: {{s3-access-key-id}}
-    secret_access_key: {{s3-secret-access-key}}
-    endpoint: {{s3-endpoint}}
-
-# - name: quotes-release
-#   type: s3
-#   source:
-#     bucket: {{s3-bucket-release}}
-#     regexp: quotes-(.*).jar
-#     access_key_id: {{s3-access-key-id}}
-#     secret_access_key: {{s3-secret-access-key}}
-#     endpoint: {{s3-endpoint}}
-
-- name: web-ui
-  type: git
-  source:
-    uri: {{web-ui-git-uri}}
-    branch: {{web-ui-git-branch}}
-    private_key: {{git-private-key}}
-
-- name: web-version
-  type: semver
-  source:
-    driver: git
-    uri: {{web-version-git-uri}}
-    branch: {{web-version-git-branch}}
-    file: number
-    initial_version: 1.0.0-rc.0
-    private_key: {{git-private-key}}
-
-- name: web-milestone
-  type: s3
-  source:
-    bucket: {{s3-bucket-milestone}}
-    regexp: web-(.*).jar
-    access_key_id: {{s3-access-key-id}}
-    secret_access_key: {{s3-secret-access-key}}
-    endpoint: {{s3-endpoint}}
-
-# - name: web-release
-#   type: s3
-#   source:
-#     bucket: {{s3-bucket-release}}
-#     regexp: web-(.*).jar
-#     access_key_id: {{s3-access-key-id}}
-#     secret_access_key: {{s3-secret-access-key}}
-#     endpoint: {{s3-endpoint}}
-
-- name: cf-itest
-  type: cf
-  source:
-    api: {{cf-api-url}}
-    skip_cert_check: true
-    username: {{cf-username}}
-    password: {{cf-password}}
-    organization: {{cf-org}}
-    space: {{cf-space}}
-
-# - name: cf-prod
-#   type: cf
-#   source:
-#     api: {{cf-api-url}}
-#     skip_cert_check: true
-#     username: {{cf-username}}
-#     password: {{cf-password}}
-#     organization: {{cf-org}}
-#     space: {{cf-space}}
+    repository: patrickcrocker/cf-cli-resource
+    tag: 1.0.2-rc.3

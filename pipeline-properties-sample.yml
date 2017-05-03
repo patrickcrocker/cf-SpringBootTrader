@@ -1,49 +1,185 @@
+# Be sure to update all the Git URIs as well as usernames and passwords for
+# your target Cloud Foundry installations and your Maven Repository Manager.
 ---
+pipeline-tasks-git-uri: https://github.com/Pivotal-Field-Engineering/pipeline-tasks.git
+pipeline-tasks-git-branch: master
+
 pipeline-git-uri: https://github.com/.../cf-SpringBootTrader.git
 pipeline-git-branch: master
-accounts-service-git-uri: git@github.com:.../accounts-service.git
-accounts-service-git-branch: master
-accounts-version-git-uri: git@github.com:.../accounts-service.git
-accounts-version-git-branch: version
-portfolio-service-git-uri: git@github.com:.../portfolio-service.git
-portfolio-service-git-branch: master
-portfolio-version-git-uri: git@github.com:.../portfolio-service.git
-portfolio-version-git-branch: version
+
 quotes-service-git-uri: git@github.com:.../quotes-service.git
 quotes-service-git-branch: master
+
 quotes-version-git-uri: git@github.com:.../quotes-service.git
 quotes-version-git-branch: version
+
+accounts-service-git-uri: git@github.com:.../accounts-service.git
+accounts-service-git-branch: master
+
+accounts-version-git-uri: git@github.com:.../accounts-service.git
+accounts-version-git-branch: version
+
+portfolio-service-git-uri: git@github.com:.../portfolio-service.git
+portfolio-service-git-branch: master
+
+portfolio-version-git-uri: git@github.com:.../portfolio-service.git
+portfolio-version-git-branch: version
+
 web-ui-git-uri: git@github.com:.../web-ui.git
 web-ui-git-branch: master
-web-version-git-uri: git@github.com:.../web-ui.git
-web-version-git-branch: version
-s3-endpoint: s3.amazonaws.com
-s3-access-key-id: SAMPLE786ASFD67AFT68
-s3-secret-access-key: SAMPLE976a9gefa79w6egfa79w6efga97we6fgaw
-s3-bucket-milestone: pivotal-bank-release-candidates
-s3-bucket-release: pivotal-bank-release
-cf-api-url: https://api.run.pivotal.io
-cf-skip-ssl: false
-cf-username: jdoe
-cf-password: mysecret
-cf-org: myorg
-cf-space: myspace
-cf-config-server-uri: https://github.com/.../cf-SpringBootTrader-config.git
-cf-config-server-label: master
-#cf-db-service: p-mysql 100mb-dev traderdb
-cf-db-service: cleardb spark traderdb
-cf-accounts-service-name: accounts-service
-cf-accounts-service-host: accounts-service
-cf-accounts-service-services: traderdb, discovery-service, circuit-breaker-dashboard, config-server
-cf-portfolio-service-name: portfolio-service
-cf-portfolio-service-host: portfolio-service
-cf-portfolio-service-services: traderdb, discovery-service, circuit-breaker-dashboard, config-server
-cf-quotes-service-name: quotes-service
-cf-quotes-service-host: quotes-service
-cf-quotes-service-services: discovery-service, circuit-breaker-dashboard, config-server
-cf-web-ui-name: web-ui
-cf-web-ui-host: web-ui
-cf-web-ui-services: discovery-service, circuit-breaker-dashboard, config-server
+
+web-ui-version-git-uri: git@github.com:.../web-ui.git
+web-ui-version-git-branch: version
+
+maven-opts: #-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.ignore.validity.dates=true
+maven-config: -s ../pipeline-tasks/maven/settings.xml -DskipTests
+
+maven-mirror-url: https://nexus.example.com/repository/maven-public/
+maven-mirror-username: admin
+maven-mirror-password: admin123
+
+maven-milestone-url: https://nexus.example.com/repository/maven-milestones/
+maven-milestone-skip-ssl: false
+maven-milestone-username: admin
+maven-milestone-password: admin123
+
+maven-release-url: https://nexus.example.com/repository/maven-releases/
+maven-release-skip-ssl: false
+maven-release-username: admin
+maven-release-password: admin123
+
+cf-test-api-url: https://api.run.pivotal.io
+cf-test-skip-ssl: false
+cf-test-username: username@example.com
+cf-test-password: password
+cf-test-org: username-org
+cf-test-space: pivotal-bank-test
+
+cf-test-config-server-service: p-config-server
+cf-test-config-server-plan: standard
+cf-test-config-server-si: config-server
+cf-test-config-server-config: '{"count":"1", "git": {"uri": "https://github.com/.../cf-SpringBootTrader-config.git"}}'
+
+cf-test-service-registry-service: p-service-registry
+cf-test-service-registry-plan: standard
+cf-test-service-registry-si: discovery-service
+cf-test-service-registry-config: '{"count":"1"}'
+
+cf-test-circuit-breaker-dashboard-service: p-circuit-breaker-dashboard
+cf-test-circuit-breaker-dashboard-plan: standard
+cf-test-circuit-breaker-dashboard-si: circuit-breaker-dashboard
+cf-test-circuit-breaker-dashboard-config: '{"count":"1"}'
+
+cf-test-quotes-name: quotes-service
+cf-test-quotes-host: quotes-service-test
+cf-test-quotes-url: https://quotes-service-test.example.com/
+
+cf-test-accounts-name: accounts-service
+cf-test-accounts-host: accounts-service-test
+cf-test-accounts-url: https://accounts-service-test.example.com/
+cf-test-accounts-db-service: cleardb
+cf-test-accounts-db-plan: spark
+cf-test-accounts-db-si: traderdb
+
+cf-test-portfolio-name: portfolio-service
+cf-test-portfolio-host: portfolio-service-test
+cf-test-portfolio-url: https://portfolio-service-test.example.com/
+cf-test-portfolio-db-service: cleardb
+cf-test-portfolio-db-plan: spark
+cf-test-portfolio-db-si: traderdb
+
+cf-test-web-name: webtrader
+cf-test-web-host: webtrader-test
+cf-test-web-url: https://webtrader-test.example.com/
+
+cf-stage-api-url: https://api.run.pivotal.io
+cf-stage-skip-ssl: false
+cf-stage-username: username@example.com
+cf-stage-password: password
+cf-stage-org: username-org
+cf-stage-space: pivotal-bank-stage
+
+cf-stage-config-server-service: p-config-server
+cf-stage-config-server-plan: standard
+cf-stage-config-server-si: config-server
+cf-stage-config-server-config: '{"count":"1", "git": {"uri": "https://github.com/.../cf-SpringBootTrader-config.git"}}'
+
+cf-stage-service-registry-service: p-service-registry
+cf-stage-service-registry-plan: standard
+cf-stage-service-registry-si: discovery-service
+cf-stage-service-registry-config: '{"count":"1"}'
+
+cf-stage-circuit-breaker-dashboard-service: p-circuit-breaker-dashboard
+cf-stage-circuit-breaker-dashboard-plan: standard
+cf-stage-circuit-breaker-dashboard-si: circuit-breaker-dashboard
+cf-stage-circuit-breaker-dashboard-config: '{"count":"1"}'
+
+cf-stage-quotes-name: quotes-service
+cf-stage-quotes-host: quotes-service-stage
+cf-stage-quotes-url: https://quotes-service-stage.example.com/
+
+cf-stage-accounts-name: accounts-service
+cf-stage-accounts-host: accounts-service-stage
+cf-stage-accounts-url: https://accounts-service-stage.example.com/
+cf-stage-accounts-db-service: cleardb
+cf-stage-accounts-db-plan: spark
+cf-stage-accounts-db-si: traderdb
+
+cf-stage-portfolio-name: portfolio-service
+cf-stage-portfolio-host: portfolio-service-stage
+cf-stage-portfolio-url: https://portfolio-service-stage.example.com/
+cf-stage-portfolio-db-service: cleardb
+cf-stage-portfolio-db-plan: spark
+cf-stage-portfolio-db-si: traderdb
+
+cf-stage-web-name: webtrader
+cf-stage-web-host: webtrader-stage
+cf-stage-web-url: https://webtrader-stage.example.com/
+
+cf-prod-api-url: https://api.run.pivotal.io
+cf-prod-skip-ssl: false
+cf-prod-username: username@example.com
+cf-prod-password: password
+cf-prod-org: username-org
+cf-prod-space: pivotal-bank-prod
+
+cf-prod-config-server-service: p-config-server
+cf-prod-config-server-plan: standard
+cf-prod-config-server-si: config-server
+cf-prod-config-server-config: '{"count":"1", "git": {"uri": "https://github.com/.../cf-SpringBootTrader-config.git"}}'
+
+cf-prod-service-registry-service: p-service-registry
+cf-prod-service-registry-plan: standard
+cf-prod-service-registry-si: discovery-service
+cf-prod-service-registry-config: '{"count":"1"}'
+
+cf-prod-circuit-breaker-dashboard-service: p-circuit-breaker-dashboard
+cf-prod-circuit-breaker-dashboard-plan: standard
+cf-prod-circuit-breaker-dashboard-si: circuit-breaker-dashboard
+cf-prod-circuit-breaker-dashboard-config: '{"count":"1"}'
+
+cf-prod-quotes-name: quotes-service
+cf-prod-quotes-host: quotes-service-prod
+cf-prod-quotes-url: https://quotes-service-prod.example.com/
+
+cf-prod-accounts-name: accounts-service
+cf-prod-accounts-host: accounts-service-prod
+cf-prod-accounts-url: https://accounts-service-prod.example.com/
+cf-prod-accounts-db-service: cleardb
+cf-prod-accounts-db-plan: spark
+cf-prod-accounts-db-si: traderdb
+
+cf-prod-portfolio-name: portfolio-service
+cf-prod-portfolio-host: portfolio-service-prod
+cf-prod-portfolio-url: https://portfolio-service-prod.example.com/
+cf-prod-portfolio-db-service: cleardb
+cf-prod-portfolio-db-plan: spark
+cf-prod-portfolio-db-si: traderdb
+
+cf-prod-web-name: webtrader
+cf-prod-web-host: webtrader-prod
+cf-prod-web-url: https://webtrader-prod.example.com/
+
 git-private-key: |
   -----BEGIN RSA PRIVATE KEY-----
   ...

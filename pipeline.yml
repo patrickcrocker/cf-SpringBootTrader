@@ -1115,7 +1115,7 @@ jobs:
       CF_APP_NAME: {{cf-test-web-name}}
       CF_APP_HOST: {{cf-test-web-host}}
       CF_APP_PATH: web-*.jar
-      CF_APP_MEMORY: 640M
+      CF_APP_MEMORY: 1G
       CF_APP_TIMEOUT: 180
       CF_APP_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
   - put: cf-push
@@ -1190,7 +1190,7 @@ jobs:
       CF_APP_NAME: {{cf-stage-web-name}}
       CF_APP_HOST: {{cf-stage-web-host}}
       CF_APP_PATH: web-*.jar
-      CF_APP_MEMORY: 640M
+      CF_APP_MEMORY: 1G
       CF_APP_TIMEOUT: 180
       CF_APP_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
   - put: cf-push
@@ -1286,7 +1286,7 @@ jobs:
       CF_APP_NAME: {{cf-prod-web-name}}
       CF_APP_HOST: {{cf-prod-web-host}}
       CF_APP_PATH: web-*.jar
-      CF_APP_MEMORY: 640M
+      CF_APP_MEMORY: 1G
       CF_APP_TIMEOUT: 180
       CF_APP_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
   - put: cf-push

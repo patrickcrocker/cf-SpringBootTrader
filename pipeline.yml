@@ -127,40 +127,33 @@ jobs:
       resource: quotes-milestone
       passed: [ build-quotes ]
       trigger: true
-  - put: cf-create-org-and-space
+  - put: cf-prepare-env
     resource: cf-test
     params:
       commands:
       - command: create-space
       - command: create-org
-  - aggregate:
-    - put: cf-create-config-server
-      resource: cf-test
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-test-config-server-service}}
         plan: {{cf-test-config-server-plan}}
         service_instance: {{cf-test-config-server-si}}
         configuration: {{cf-test-config-server-config}}
-        wait_for_service: true
-    - put: cf-create-service-registry
-      resource: cf-test
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-test-service-registry-service}}
         plan: {{cf-test-service-registry-plan}}
         service_instance: {{cf-test-service-registry-si}}
         configuration: {{cf-test-service-registry-config}}
-        wait_for_service: true
-    - put: cf-create-circuit-breaker-dashboard
-      resource: cf-test
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-test-circuit-breaker-dashboard-service}}
         plan: {{cf-test-circuit-breaker-dashboard-plan}}
         service_instance: {{cf-test-circuit-breaker-dashboard-si}}
         configuration: {{cf-test-circuit-breaker-dashboard-config}}
-        wait_for_service: true
+      - command: wait-for-service
+        service_instance: {{cf-test-config-server-si}}
+      - command: wait-for-service
+        service_instance: {{cf-test-service-registry-si}}
+      - command: wait-for-service
+        service_instance: {{cf-test-circuit-breaker-dashboard-si}}
   - task: generate-manifest
     file: pipeline-tasks/generate-manifest/task.yml
     params:
@@ -202,40 +195,33 @@ jobs:
       resource: quotes-milestone
       passed: [ test-quotes ]
       trigger: true
-  - put: cf-create-org-and-space
+  - put: cf-prepare-env
     resource: cf-stage
     params:
       commands:
       - command: create-org
       - command: create-space
-  - aggregate:
-    - put: cf-create-config-server
-      resource: cf-stage
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-stage-config-server-service}}
         plan: {{cf-stage-config-server-plan}}
         service_instance: {{cf-stage-config-server-si}}
         configuration: {{cf-stage-config-server-config}}
-        wait_for_service: true
-    - put: cf-create-service-registry
-      resource: cf-stage
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-stage-service-registry-service}}
         plan: {{cf-stage-service-registry-plan}}
         service_instance: {{cf-stage-service-registry-si}}
         configuration: {{cf-stage-service-registry-config}}
-        wait_for_service: true
-    - put: cf-create-circuit-breaker-dashboard
-      resource: cf-stage
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-stage-circuit-breaker-dashboard-service}}
         plan: {{cf-stage-circuit-breaker-dashboard-plan}}
         service_instance: {{cf-stage-circuit-breaker-dashboard-si}}
         configuration: {{cf-stage-circuit-breaker-dashboard-config}}
-        wait_for_service: true
+      - command: wait-for-service
+        service_instance: {{cf-stage-config-server-si}}
+      - command: wait-for-service
+        service_instance: {{cf-stage-service-registry-si}}
+      - command: wait-for-service
+        service_instance: {{cf-stage-circuit-breaker-dashboard-si}}
   - task: generate-manifest
     file: pipeline-tasks/generate-manifest/task.yml
     params:
@@ -298,40 +284,33 @@ jobs:
     - get: artifact
       resource: quotes-release
       passed: [ship-quotes]
-  - put: cf-create-org-and-space
+  - put: cf-prepare-env
     resource: cf-prod
     params:
       commands:
       - command: create-org
       - command: create-space
-  - aggregate:
-    - put: cf-create-config-server
-      resource: cf-prod
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-prod-config-server-service}}
         plan: {{cf-prod-config-server-plan}}
         service_instance: {{cf-prod-config-server-si}}
         configuration: {{cf-prod-config-server-config}}
-        wait_for_service: true
-    - put: cf-create-service-registry
-      resource: cf-prod
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-prod-service-registry-service}}
         plan: {{cf-prod-service-registry-plan}}
         service_instance: {{cf-prod-service-registry-si}}
         configuration: {{cf-prod-service-registry-config}}
-        wait_for_service: true
-    - put: cf-create-circuit-breaker-dashboard
-      resource: cf-prod
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-prod-circuit-breaker-dashboard-service}}
         plan: {{cf-prod-circuit-breaker-dashboard-plan}}
         service_instance: {{cf-prod-circuit-breaker-dashboard-si}}
         configuration: {{cf-prod-circuit-breaker-dashboard-config}}
-        wait_for_service: true
+      - command: wait-for-service
+        service_instance: {{cf-prod-config-server-si}}
+      - command: wait-for-service
+        service_instance: {{cf-prod-service-registry-si}}
+      - command: wait-for-service
+        service_instance: {{cf-prod-circuit-breaker-dashboard-si}}
   - task: generate-manifest
     file: pipeline-tasks/generate-manifest/task.yml
     params:
@@ -429,47 +408,37 @@ jobs:
       resource: accounts-milestone
       passed: [ build-accounts ]
       trigger: true
-  - put: cf-create-org-and-space
+  - put: cf-prepare-env
     resource: cf-test
     params:
       commands:
       - command: create-space
       - command: create-org
-  - aggregate:
-    - put: cf-create-db
-      resource: cf-test
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-test-accounts-db-service}}
         plan: {{cf-test-accounts-db-plan}}
         service_instance: {{cf-test-accounts-db-si}}
-    - put: cf-create-config-server
-      resource: cf-test
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-test-config-server-service}}
         plan: {{cf-test-config-server-plan}}
         service_instance: {{cf-test-config-server-si}}
         configuration: {{cf-test-config-server-config}}
-        wait_for_service: true
-    - put: cf-create-service-registry
-      resource: cf-test
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-test-service-registry-service}}
         plan: {{cf-test-service-registry-plan}}
         service_instance: {{cf-test-service-registry-si}}
         configuration: {{cf-test-service-registry-config}}
-        wait_for_service: true
-    - put: cf-create-circuit-breaker-dashboard
-      resource: cf-test
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-test-circuit-breaker-dashboard-service}}
         plan: {{cf-test-circuit-breaker-dashboard-plan}}
         service_instance: {{cf-test-circuit-breaker-dashboard-si}}
         configuration: {{cf-test-circuit-breaker-dashboard-config}}
-        wait_for_service: true
+      - command: wait-for-service
+        service_instance: {{cf-test-config-server-si}}
+      - command: wait-for-service
+        service_instance: {{cf-test-service-registry-si}}
+      - command: wait-for-service
+        service_instance: {{cf-test-circuit-breaker-dashboard-si}}
   - task: generate-manifest
     file: pipeline-tasks/generate-manifest/task.yml
     params:
@@ -511,47 +480,37 @@ jobs:
       resource: accounts-milestone
       passed: [ test-accounts ]
       trigger: true
-  - put: cf-create-org-and-space
+  - put: cf-prepare-env
     resource: cf-stage
     params:
       commands:
       - command: create-org
       - command: create-space
-  - aggregate:
-    - put: cf-create-db
-      resource: cf-stage
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-stage-accounts-db-service}}
         plan: {{cf-stage-accounts-db-plan}}
         service_instance: {{cf-stage-accounts-db-si}}
-    - put: cf-create-config-server
-      resource: cf-stage
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-stage-config-server-service}}
         plan: {{cf-stage-config-server-plan}}
         service_instance: {{cf-stage-config-server-si}}
         configuration: {{cf-stage-config-server-config}}
-        wait_for_service: true
-    - put: cf-create-service-registry
-      resource: cf-stage
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-stage-service-registry-service}}
         plan: {{cf-stage-service-registry-plan}}
         service_instance: {{cf-stage-service-registry-si}}
         configuration: {{cf-stage-service-registry-config}}
-        wait_for_service: true
-    - put: cf-create-circuit-breaker-dashboard
-      resource: cf-stage
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-stage-circuit-breaker-dashboard-service}}
         plan: {{cf-stage-circuit-breaker-dashboard-plan}}
         service_instance: {{cf-stage-circuit-breaker-dashboard-si}}
         configuration: {{cf-stage-circuit-breaker-dashboard-config}}
-        wait_for_service: true
+      - command: wait-for-service
+        service_instance: {{cf-stage-config-server-si}}
+      - command: wait-for-service
+        service_instance: {{cf-stage-service-registry-si}}
+      - command: wait-for-service
+        service_instance: {{cf-stage-circuit-breaker-dashboard-si}}
   - task: generate-manifest
     file: pipeline-tasks/generate-manifest/task.yml
     params:
@@ -614,47 +573,37 @@ jobs:
     - get: artifact
       resource: accounts-release
       passed: [ship-accounts]
-  - put: cf-create-org-and-space
+  - put: cf-prepare-env
     resource: cf-prod
     params:
       commands:
       - command: create-org
       - command: create-space
-  - aggregate:
-    - put: cf-create-db
-      resource: cf-prod
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-prod-accounts-db-service}}
         plan: {{cf-prod-accounts-db-plan}}
         service_instance: {{cf-prod-accounts-db-si}}
-    - put: cf-create-config-server
-      resource: cf-prod
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-prod-config-server-service}}
         plan: {{cf-prod-config-server-plan}}
         service_instance: {{cf-prod-config-server-si}}
         configuration: {{cf-prod-config-server-config}}
-        wait_for_service: true
-    - put: cf-create-service-registry
-      resource: cf-prod
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-prod-service-registry-service}}
         plan: {{cf-prod-service-registry-plan}}
         service_instance: {{cf-prod-service-registry-si}}
         configuration: {{cf-prod-service-registry-config}}
-        wait_for_service: true
-    - put: cf-create-circuit-breaker-dashboard
-      resource: cf-prod
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-prod-circuit-breaker-dashboard-service}}
         plan: {{cf-prod-circuit-breaker-dashboard-plan}}
         service_instance: {{cf-prod-circuit-breaker-dashboard-si}}
         configuration: {{cf-prod-circuit-breaker-dashboard-config}}
-        wait_for_service: true
+      - command: wait-for-service
+        service_instance: {{cf-prod-config-server-si}}
+      - command: wait-for-service
+        service_instance: {{cf-prod-service-registry-si}}
+      - command: wait-for-service
+        service_instance: {{cf-prod-circuit-breaker-dashboard-si}}
   - task: generate-manifest
     file: pipeline-tasks/generate-manifest/task.yml
     params:
@@ -752,47 +701,37 @@ jobs:
       resource: portfolio-milestone
       passed: [ build-portfolio ]
       trigger: true
-  - put: cf-create-org-and-space
+  - put: cf-prepare-env
     resource: cf-test
     params:
       commands:
       - command: create-space
       - command: create-org
-  - aggregate:
-    - put: cf-create-db
-      resource: cf-test
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-test-portfolio-db-service}}
         plan: {{cf-test-portfolio-db-plan}}
         service_instance: {{cf-test-portfolio-db-si}}
-    - put: cf-create-config-server
-      resource: cf-test
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-test-config-server-service}}
         plan: {{cf-test-config-server-plan}}
         service_instance: {{cf-test-config-server-si}}
         configuration: {{cf-test-config-server-config}}
-        wait_for_service: true
-    - put: cf-create-service-registry
-      resource: cf-test
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-test-service-registry-service}}
         plan: {{cf-test-service-registry-plan}}
         service_instance: {{cf-test-service-registry-si}}
         configuration: {{cf-test-service-registry-config}}
-        wait_for_service: true
-    - put: cf-create-circuit-breaker-dashboard
-      resource: cf-test
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-test-circuit-breaker-dashboard-service}}
         plan: {{cf-test-circuit-breaker-dashboard-plan}}
         service_instance: {{cf-test-circuit-breaker-dashboard-si}}
         configuration: {{cf-test-circuit-breaker-dashboard-config}}
-        wait_for_service: true
+      - command: wait-for-service
+        service_instance: {{cf-test-config-server-si}}
+      - command: wait-for-service
+        service_instance: {{cf-test-service-registry-si}}
+      - command: wait-for-service
+        service_instance: {{cf-test-circuit-breaker-dashboard-si}}
   - task: generate-manifest
     file: pipeline-tasks/generate-manifest/task.yml
     params:
@@ -834,47 +773,37 @@ jobs:
       resource: portfolio-milestone
       passed: [ test-portfolio ]
       trigger: true
-  - put: cf-create-org-and-space
+  - put: cf-prepare-env
     resource: cf-stage
     params:
       commands:
       - command: create-org
       - command: create-space
-  - aggregate:
-    - put: cf-create-db
-      resource: cf-stage
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-stage-portfolio-db-service}}
         plan: {{cf-stage-portfolio-db-plan}}
         service_instance: {{cf-stage-portfolio-db-si}}
-    - put: cf-create-config-server
-      resource: cf-stage
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-stage-config-server-service}}
         plan: {{cf-stage-config-server-plan}}
         service_instance: {{cf-stage-config-server-si}}
         configuration: {{cf-stage-config-server-config}}
-        wait_for_service: true
-    - put: cf-create-service-registry
-      resource: cf-stage
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-stage-service-registry-service}}
         plan: {{cf-stage-service-registry-plan}}
         service_instance: {{cf-stage-service-registry-si}}
         configuration: {{cf-stage-service-registry-config}}
-        wait_for_service: true
-    - put: cf-create-circuit-breaker-dashboard
-      resource: cf-stage
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-stage-circuit-breaker-dashboard-service}}
         plan: {{cf-stage-circuit-breaker-dashboard-plan}}
         service_instance: {{cf-stage-circuit-breaker-dashboard-si}}
         configuration: {{cf-stage-circuit-breaker-dashboard-config}}
-        wait_for_service: true
+      - command: wait-for-service
+        service_instance: {{cf-stage-config-server-si}}
+      - command: wait-for-service
+        service_instance: {{cf-stage-service-registry-si}}
+      - command: wait-for-service
+        service_instance: {{cf-stage-circuit-breaker-dashboard-si}}
   - task: generate-manifest
     file: pipeline-tasks/generate-manifest/task.yml
     params:
@@ -937,47 +866,37 @@ jobs:
     - get: artifact
       resource: portfolio-release
       passed: [ship-portfolio]
-  - put: cf-create-org-and-space
+  - put: cf-prepare-env
     resource: cf-prod
     params:
       commands:
       - command: create-org
       - command: create-space
-  - aggregate:
-    - put: cf-create-db
-      resource: cf-prod
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-prod-portfolio-db-service}}
         plan: {{cf-prod-portfolio-db-plan}}
         service_instance: {{cf-prod-portfolio-db-si}}
-    - put: cf-create-config-server
-      resource: cf-prod
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-prod-config-server-service}}
         plan: {{cf-prod-config-server-plan}}
         service_instance: {{cf-prod-config-server-si}}
         configuration: {{cf-prod-config-server-config}}
-        wait_for_service: true
-    - put: cf-create-service-registry
-      resource: cf-prod
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-prod-service-registry-service}}
         plan: {{cf-prod-service-registry-plan}}
         service_instance: {{cf-prod-service-registry-si}}
         configuration: {{cf-prod-service-registry-config}}
-        wait_for_service: true
-    - put: cf-create-circuit-breaker-dashboard
-      resource: cf-prod
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-prod-circuit-breaker-dashboard-service}}
         plan: {{cf-prod-circuit-breaker-dashboard-plan}}
         service_instance: {{cf-prod-circuit-breaker-dashboard-si}}
         configuration: {{cf-prod-circuit-breaker-dashboard-config}}
-        wait_for_service: true
+      - command: wait-for-service
+        service_instance: {{cf-prod-config-server-si}}
+      - command: wait-for-service
+        service_instance: {{cf-prod-service-registry-si}}
+      - command: wait-for-service
+        service_instance: {{cf-prod-circuit-breaker-dashboard-si}}
   - task: generate-manifest
     file: pipeline-tasks/generate-manifest/task.yml
     params:
@@ -1075,40 +994,33 @@ jobs:
       resource: web-milestone
       passed: [ build-web ]
       trigger: true
-  - put: cf-create-org-and-space
+  - put: cf-prepare-env
     resource: cf-test
     params:
       commands:
       - command: create-space
       - command: create-org
-  - aggregate:
-    - put: cf-create-config-server
-      resource: cf-test
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-test-config-server-service}}
         plan: {{cf-test-config-server-plan}}
         service_instance: {{cf-test-config-server-si}}
         configuration: {{cf-test-config-server-config}}
-        wait_for_service: true
-    - put: cf-create-service-registry
-      resource: cf-test
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-test-service-registry-service}}
         plan: {{cf-test-service-registry-plan}}
         service_instance: {{cf-test-service-registry-si}}
         configuration: {{cf-test-service-registry-config}}
-        wait_for_service: true
-    - put: cf-create-circuit-breaker-dashboard
-      resource: cf-test
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-test-circuit-breaker-dashboard-service}}
         plan: {{cf-test-circuit-breaker-dashboard-plan}}
         service_instance: {{cf-test-circuit-breaker-dashboard-si}}
         configuration: {{cf-test-circuit-breaker-dashboard-config}}
-        wait_for_service: true
+      - command: wait-for-service
+        service_instance: {{cf-test-config-server-si}}
+      - command: wait-for-service
+        service_instance: {{cf-test-service-registry-si}}
+      - command: wait-for-service
+        service_instance: {{cf-test-circuit-breaker-dashboard-si}}
   - task: generate-manifest
     file: pipeline-tasks/generate-manifest/task.yml
     params:
@@ -1150,40 +1062,33 @@ jobs:
       resource: web-milestone
       passed: [ test-web ]
       trigger: true
-  - put: cf-create-org-and-space
+  - put: cf-prepare-env
     resource: cf-stage
     params:
       commands:
       - command: create-org
       - command: create-space
-  - aggregate:
-    - put: cf-create-config-server
-      resource: cf-stage
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-stage-config-server-service}}
         plan: {{cf-stage-config-server-plan}}
         service_instance: {{cf-stage-config-server-si}}
         configuration: {{cf-stage-config-server-config}}
-        wait_for_service: true
-    - put: cf-create-service-registry
-      resource: cf-stage
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-stage-service-registry-service}}
         plan: {{cf-stage-service-registry-plan}}
         service_instance: {{cf-stage-service-registry-si}}
         configuration: {{cf-stage-service-registry-config}}
-        wait_for_service: true
-    - put: cf-create-circuit-breaker-dashboard
-      resource: cf-stage
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-stage-circuit-breaker-dashboard-service}}
         plan: {{cf-stage-circuit-breaker-dashboard-plan}}
         service_instance: {{cf-stage-circuit-breaker-dashboard-si}}
         configuration: {{cf-stage-circuit-breaker-dashboard-config}}
-        wait_for_service: true
+      - command: wait-for-service
+        service_instance: {{cf-stage-config-server-si}}
+      - command: wait-for-service
+        service_instance: {{cf-stage-service-registry-si}}
+      - command: wait-for-service
+        service_instance: {{cf-stage-circuit-breaker-dashboard-si}}
   - task: generate-manifest
     file: pipeline-tasks/generate-manifest/task.yml
     params:
@@ -1246,40 +1151,33 @@ jobs:
     - get: artifact
       resource: web-release
       passed: [ship-web]
-  - put: cf-create-org-and-space
+  - put: cf-prepare-env
     resource: cf-prod
     params:
       commands:
       - command: create-org
       - command: create-space
-  - aggregate:
-    - put: cf-create-config-server
-      resource: cf-prod
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-prod-config-server-service}}
         plan: {{cf-prod-config-server-plan}}
         service_instance: {{cf-prod-config-server-si}}
         configuration: {{cf-prod-config-server-config}}
-        wait_for_service: true
-    - put: cf-create-service-registry
-      resource: cf-prod
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-prod-service-registry-service}}
         plan: {{cf-prod-service-registry-plan}}
         service_instance: {{cf-prod-service-registry-si}}
         configuration: {{cf-prod-service-registry-config}}
-        wait_for_service: true
-    - put: cf-create-circuit-breaker-dashboard
-      resource: cf-prod
-      params:
-        command: create-service
+      - command: create-service
         service: {{cf-prod-circuit-breaker-dashboard-service}}
         plan: {{cf-prod-circuit-breaker-dashboard-plan}}
         service_instance: {{cf-prod-circuit-breaker-dashboard-si}}
         configuration: {{cf-prod-circuit-breaker-dashboard-config}}
-        wait_for_service: true
+      - command: wait-for-service
+        service_instance: {{cf-prod-config-server-si}}
+      - command: wait-for-service
+        service_instance: {{cf-prod-service-registry-si}}
+      - command: wait-for-service
+        service_instance: {{cf-prod-circuit-breaker-dashboard-si}}
   - task: generate-manifest
     file: pipeline-tasks/generate-manifest/task.yml
     params:

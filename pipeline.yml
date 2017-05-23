@@ -159,10 +159,13 @@ jobs:
     params:
       MF_NAME: {{cf-test-quotes-name}}
       MF_HOST: {{cf-test-quotes-host}}
-      # MF_MEMORY: 640M
+      MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
       MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.0
+      MF_ENV:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   - put: cf-push
     resource: cf-test
     params:
@@ -170,10 +173,6 @@ jobs:
       manifest: task-output/manifest.yml
       path: artifact/quotes-*.jar
       current_app_name: {{cf-test-quotes-name}}
-      environment_variables:
-        SPRING_PROFILES_ACTIVE: cloud
-        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-        # JBP_CONFIG_OPEN_JDK_JRE: '{ memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: { metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5 } } }'
   - task: integration-tests
     file: pipeline-tasks/run-maven-itests/task.yml
     params:
@@ -228,10 +227,13 @@ jobs:
     params:
       MF_NAME: {{cf-stage-quotes-name}}
       MF_HOST: {{cf-stage-quotes-host}}
-      # MF_MEMORY: 640M
+      MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
       MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.0
+      MF_ENV:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   - put: cf-push
     resource: cf-stage
     params:
@@ -239,10 +241,6 @@ jobs:
       manifest: task-output/manifest.yml
       path: artifact/quotes-*.jar
       current_app_name: {{cf-stage-quotes-name}}
-      environment_variables:
-        SPRING_PROFILES_ACTIVE: cloud
-        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-        # JBP_CONFIG_OPEN_JDK_JRE: '{ memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: { metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5 } } }'
   - task: integration-tests
     file: pipeline-tasks/run-maven-itests/task.yml
     params:
@@ -318,10 +316,13 @@ jobs:
     params:
       MF_NAME: {{cf-prod-quotes-name}}
       MF_HOST: {{cf-prod-quotes-host}}
-      # MF_MEMORY: 640M
+      MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
       MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.0
+      MF_ENV:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   - put: cf-push
     resource: cf-prod
     params:
@@ -329,10 +330,6 @@ jobs:
       manifest: task-output/manifest.yml
       path: artifact/quotes-*.jar
       current_app_name: {{cf-prod-quotes-name}}
-      environment_variables:
-        SPRING_PROFILES_ACTIVE: cloud
-        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-        # JBP_CONFIG_OPEN_JDK_JRE: '{ memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: { metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5 } } }'
   - task: integration-tests
     file: pipeline-tasks/run-maven-itests/task.yml
     params:
@@ -447,10 +444,13 @@ jobs:
     params:
       MF_NAME: {{cf-test-accounts-name}}
       MF_HOST: {{cf-test-accounts-host}}
-      # MF_MEMORY: 640M
+      MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [{{cf-test-accounts-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
       MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.0
+      MF_ENV:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   - put: cf-push
     resource: cf-test
     params:
@@ -458,10 +458,6 @@ jobs:
       manifest: task-output/manifest.yml
       path: artifact/accounts-*.jar
       current_app_name: {{cf-test-accounts-name}}
-      environment_variables:
-        SPRING_PROFILES_ACTIVE: cloud
-        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-        # JBP_CONFIG_OPEN_JDK_JRE: '{ memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: { metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5 } } }'
   - task: integration-tests
     file: pipeline-tasks/run-maven-itests/task.yml
     params:
@@ -520,10 +516,13 @@ jobs:
     params:
       MF_NAME: {{cf-stage-accounts-name}}
       MF_HOST: {{cf-stage-accounts-host}}
-      # MF_MEMORY: 640M
+      MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [{{cf-stage-accounts-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
       MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.0
+      MF_ENV:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   - put: cf-push
     resource: cf-stage
     params:
@@ -531,10 +530,6 @@ jobs:
       manifest: task-output/manifest.yml
       path: artifact/accounts-*.jar
       current_app_name: {{cf-stage-accounts-name}}
-      environment_variables:
-        SPRING_PROFILES_ACTIVE: cloud
-        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-        # JBP_CONFIG_OPEN_JDK_JRE: '{ memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: { metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5 } } }'
   - task: integration-tests
     file: pipeline-tasks/run-maven-itests/task.yml
     params:
@@ -614,10 +609,13 @@ jobs:
     params:
       MF_NAME: {{cf-prod-accounts-name}}
       MF_HOST: {{cf-prod-accounts-host}}
-      # MF_MEMORY: 640M
+      MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [{{cf-prod-accounts-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
       MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.0
+      MF_ENV:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   - put: cf-push
     resource: cf-prod
     params:
@@ -625,10 +623,6 @@ jobs:
       manifest: task-output/manifest.yml
       path: artifact/accounts-*.jar
       current_app_name: {{cf-prod-accounts-name}}
-      environment_variables:
-        SPRING_PROFILES_ACTIVE: cloud
-        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-        # JBP_CONFIG_OPEN_JDK_JRE: '{ memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: { metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5 } } }'
   - task: integration-tests
     file: pipeline-tasks/run-maven-itests/task.yml
     params:
@@ -743,10 +737,13 @@ jobs:
     params:
       MF_NAME: {{cf-test-portfolio-name}}
       MF_HOST: {{cf-test-portfolio-host}}
-      # MF_MEMORY: 640M
+      MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [{{cf-test-portfolio-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
       MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.0
+      MF_ENV:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   - put: cf-push
     resource: cf-test
     params:
@@ -754,10 +751,6 @@ jobs:
       manifest: task-output/manifest.yml
       path: artifact/portfolio-*.jar
       current_app_name: {{cf-test-portfolio-name}}
-      environment_variables:
-        SPRING_PROFILES_ACTIVE: cloud
-        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-        # JBP_CONFIG_OPEN_JDK_JRE: '{ memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: { metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5 } } }'
   - task: integration-tests
     file: pipeline-tasks/run-maven-itests/task.yml
     params:
@@ -816,10 +809,13 @@ jobs:
     params:
       MF_NAME: {{cf-stage-portfolio-name}}
       MF_HOST: {{cf-stage-portfolio-host}}
-      # MF_MEMORY: 640M
+      MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [{{cf-stage-portfolio-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
       MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.0
+      MF_ENV:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   - put: cf-push
     resource: cf-stage
     params:
@@ -827,10 +823,6 @@ jobs:
       manifest: task-output/manifest.yml
       path: artifact/portfolio-*.jar
       current_app_name: {{cf-stage-portfolio-name}}
-      environment_variables:
-        SPRING_PROFILES_ACTIVE: cloud
-        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-        # JBP_CONFIG_OPEN_JDK_JRE: '{ memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: { metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5 } } }'
   - task: integration-tests
     file: pipeline-tasks/run-maven-itests/task.yml
     params:
@@ -910,10 +902,13 @@ jobs:
     params:
       MF_NAME: {{cf-prod-portfolio-name}}
       MF_HOST: {{cf-prod-portfolio-host}}
-      # MF_MEMORY: 640M
+      MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [{{cf-prod-portfolio-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
       MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.0
+      MF_ENV:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   - put: cf-push
     resource: cf-prod
     params:
@@ -921,10 +916,6 @@ jobs:
       manifest: task-output/manifest.yml
       path: artifact/portfolio-*.jar
       current_app_name: {{cf-prod-portfolio-name}}
-      environment_variables:
-        SPRING_PROFILES_ACTIVE: cloud
-        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-        # JBP_CONFIG_OPEN_JDK_JRE: '{ memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: { metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5 } } }'
   - task: integration-tests
     file: pipeline-tasks/run-maven-itests/task.yml
     params:
@@ -1035,10 +1026,13 @@ jobs:
     params:
       MF_NAME: {{cf-test-web-name}}
       MF_HOST: {{cf-test-web-host}}
-      # MF_MEMORY: 1G
+      MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
       MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.0
+      MF_ENV:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   - put: cf-push
     resource: cf-test
     params:
@@ -1046,10 +1040,6 @@ jobs:
       manifest: task-output/manifest.yml
       path: artifact/web-*.jar
       current_app_name: {{cf-test-web-name}}
-      environment_variables:
-        SPRING_PROFILES_ACTIVE: cloud
-        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-        # JBP_CONFIG_OPEN_JDK_JRE: '{ memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: { metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5 } } }'
   - task: integration-tests
     file: pipeline-tasks/run-maven-itests/task.yml
     params:
@@ -1104,10 +1094,13 @@ jobs:
     params:
       MF_NAME: {{cf-stage-web-name}}
       MF_HOST: {{cf-stage-web-host}}
-      # MF_MEMORY: 1G
+      MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
       MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.0
+      MF_ENV:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   - put: cf-push
     resource: cf-stage
     params:
@@ -1115,10 +1108,6 @@ jobs:
       manifest: task-output/manifest.yml
       path: artifact/web-*.jar
       current_app_name: {{cf-stage-web-name}}
-      environment_variables:
-        SPRING_PROFILES_ACTIVE: cloud
-        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-        # JBP_CONFIG_OPEN_JDK_JRE: '{ memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: { metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5 } } }'
   - task: integration-tests
     file: pipeline-tasks/run-maven-itests/task.yml
     params:
@@ -1194,10 +1183,13 @@ jobs:
     params:
       MF_NAME: {{cf-prod-web-name}}
       MF_HOST: {{cf-prod-web-host}}
-      # MF_MEMORY: 1G
+      MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
       MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.0
+      MF_ENV:
+        SPRING_PROFILES_ACTIVE: cloud
+        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   - put: cf-push
     resource: cf-prod
     params:
@@ -1205,10 +1197,6 @@ jobs:
       manifest: task-output/manifest.yml
       path: artifact/web-*.jar
       current_app_name: {{cf-prod-web-name}}
-      environment_variables:
-        SPRING_PROFILES_ACTIVE: cloud
-        JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
-        # JBP_CONFIG_OPEN_JDK_JRE: '{ memory_calculator: { memory_sizes: { metaspace: 100m }, memory_heuristics: { metaspace: 10, heap: 65, native: 20, permgen: 10, stack: 5 } } }'
   - task: integration-tests
     file: pipeline-tasks/run-maven-itests/task.yml
     params:

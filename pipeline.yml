@@ -131,8 +131,8 @@ jobs:
     resource: cf-test
     params:
       commands:
-      - command: create-space
       - command: create-org
+      - command: create-space
       - command: create-service
         service: {{cf-test-config-server-service}}
         plan: {{cf-test-config-server-plan}}
@@ -162,7 +162,7 @@ jobs:
       MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
-      MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.1
+      MF_BUILDPACK: java_buildpack
       MF_ENV:
         SPRING_PROFILES_ACTIVE: cloud
         JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
@@ -230,7 +230,7 @@ jobs:
       MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
-      MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.1
+      MF_BUILDPACK: java_buildpack
       MF_ENV:
         SPRING_PROFILES_ACTIVE: cloud
         JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
@@ -319,7 +319,7 @@ jobs:
       MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
-      MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.1
+      MF_BUILDPACK: java_buildpack
       MF_ENV:
         SPRING_PROFILES_ACTIVE: cloud
         JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
@@ -412,8 +412,8 @@ jobs:
     resource: cf-test
     params:
       commands:
-      - command: create-space
       - command: create-org
+      - command: create-space
       - command: create-service
         service: {{cf-test-accounts-db-service}}
         plan: {{cf-test-accounts-db-plan}}
@@ -447,7 +447,7 @@ jobs:
       MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [{{cf-test-accounts-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
-      MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.1
+      MF_BUILDPACK: java_buildpack
       MF_ENV:
         SPRING_PROFILES_ACTIVE: cloud
         JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
@@ -519,7 +519,7 @@ jobs:
       MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [{{cf-stage-accounts-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
-      MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.1
+      MF_BUILDPACK: java_buildpack
       MF_ENV:
         SPRING_PROFILES_ACTIVE: cloud
         JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
@@ -612,7 +612,7 @@ jobs:
       MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [{{cf-prod-accounts-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
-      MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.1
+      MF_BUILDPACK: java_buildpack
       MF_ENV:
         SPRING_PROFILES_ACTIVE: cloud
         JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
@@ -705,8 +705,8 @@ jobs:
     resource: cf-test
     params:
       commands:
-      - command: create-space
       - command: create-org
+      - command: create-space
       - command: create-service
         service: {{cf-test-portfolio-db-service}}
         plan: {{cf-test-portfolio-db-plan}}
@@ -740,7 +740,7 @@ jobs:
       MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [{{cf-test-portfolio-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
-      MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.1
+      MF_BUILDPACK: java_buildpack
       MF_ENV:
         SPRING_PROFILES_ACTIVE: cloud
         JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
@@ -812,7 +812,7 @@ jobs:
       MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [{{cf-stage-portfolio-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
-      MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.1
+      MF_BUILDPACK: java_buildpack
       MF_ENV:
         SPRING_PROFILES_ACTIVE: cloud
         JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
@@ -905,7 +905,7 @@ jobs:
       MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [{{cf-prod-portfolio-db-si}}, discovery-service, circuit-breaker-dashboard, config-server]
-      MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.1
+      MF_BUILDPACK: java_buildpack
       MF_ENV:
         SPRING_PROFILES_ACTIVE: cloud
         JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
@@ -998,8 +998,8 @@ jobs:
     resource: cf-test
     params:
       commands:
-      - command: create-space
       - command: create-org
+      - command: create-space
       - command: create-service
         service: {{cf-test-config-server-service}}
         plan: {{cf-test-config-server-plan}}
@@ -1029,7 +1029,7 @@ jobs:
       MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
-      MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.1
+      MF_BUILDPACK: java_buildpack
       MF_ENV:
         SPRING_PROFILES_ACTIVE: cloud
         JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
@@ -1097,7 +1097,7 @@ jobs:
       MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
-      MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.1
+      MF_BUILDPACK: java_buildpack
       MF_ENV:
         SPRING_PROFILES_ACTIVE: cloud
         JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
@@ -1186,7 +1186,7 @@ jobs:
       MF_MEMORY: 1G
       MF_TIMEOUT: 180
       MF_SERVICES: [discovery-service, circuit-breaker-dashboard, config-server]
-      MF_BUILDPACK: https://github.com/cloudfoundry/java-buildpack.git#v4.1
+      MF_BUILDPACK: java_buildpack
       MF_ENV:
         SPRING_PROFILES_ACTIVE: cloud
         JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
@@ -1388,7 +1388,7 @@ resources:
     api: {{cf-test-api-url}}
     skip_cert_check: {{cf-test-skip-ssl}}
     username: {{cf-test-username}}
-    password: {{cf-test-password}}
+    password: ((cf-test-password))
     org: {{cf-test-org}}
     space: {{cf-test-space}}
 
@@ -1398,7 +1398,7 @@ resources:
     api: {{cf-stage-api-url}}
     skip_cert_check: {{cf-stage-skip-ssl}}
     username: {{cf-stage-username}}
-    password: {{cf-stage-password}}
+    password: ((cf-stage-password))
     org: {{cf-stage-org}}
     space: {{cf-stage-space}}
 
@@ -1408,7 +1408,7 @@ resources:
     api: {{cf-prod-api-url}}
     skip_cert_check: {{cf-prod-skip-ssl}}
     username: {{cf-prod-username}}
-    password: {{cf-prod-password}}
+    password: ((cf-prod-password))
     org: {{cf-prod-org}}
     space: {{cf-prod-space}}
 
@@ -1417,10 +1417,10 @@ resource_types:
   type: docker-image
   source:
     repository: pivotalpa/maven-resource
-    tag: 1.3.2
+    tag: latest
 
 - name: cf-cli-resource
   type: docker-image
   source:
     repository: pivotalpa/cf-cli-resource
-    tag: 2.0.0
+    tag: latest
